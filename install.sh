@@ -15,6 +15,10 @@ else
   exit 1
 fi
 
+ARCHINSTALL_wmpackages="i3 lightdm-gtk-greeter"
+ARCHINSTALL_devpackages="base-devel git kitty vim"
+ARCHINSTALL_services="lightdm"
+
 read -p "Hostname: " ARCHINSTALL_hostname
 read -p "Username: " ARCHINSTALL_username
 read -p "Keymap (default: sv-latin1): " ARCHINSTALL_keymap
@@ -248,9 +252,7 @@ fi
 
 printf "\n[INSTALL WINDOW MANAGER]\n"
 
-pacman -S --noconfirm mesa xorg i3 lightdm-gtk-greeter
-systemctl enable lightdm
-#localectl set-x11-keymap se # not working in arch-chroot ?
+pacman -S --noconfirm mesa xorg $ARCHINSTALL_wmpackages
 
 if [ "$?" = 0 ]
 then
@@ -262,7 +264,7 @@ fi
 
 printf "\n[INSTALL DEVELOPMENT PACKAGES]\n"
 
-pacman -S --noconfirm base-devel git kitty vim
+pacman -S --noconfirm $ARCHINSTALL_devpackages
 
 if [ "$?" = 0 ]
 then
@@ -289,6 +291,20 @@ fi
 printf "\n[SETUP CONFIGURATION]\n"
 
 # clone dotfiles etc.
+
+if [ "$?" = 0 ]
+then
+  printf "\n[OK]\n"
+else
+  printf "\n[FAILED]\n"
+  exit 1
+fi
+
+printf "\n[ENABLE SERVICES]\n"
+
+for token in ${ARCHINSTALL_services}; do
+    systemctl enable $service
+done
 
 if [ "$?" = 0 ]
 then
