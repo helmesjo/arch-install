@@ -3,15 +3,15 @@
 # ------------------------ DO NOT USE THIS!
 # ------------------------ IT WILL PROBABLY BREAK YOUR COMPUTER!
 
-printf "\n[VERIFY INTERNET]\n"
+printf "\n[VERIFY INTERNET]\n\n"
 
 ping -c1 -W2000 archlinux.org 2>/dev/null 1>/dev/null
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
@@ -36,7 +36,7 @@ read -p "Select disk: " ARCHINSTALL_disk
 
 loadkeys $ARCHINSTALL_keymap
 
-printf "\n[PARTITION DISK]\n"
+printf "\n[PARTITION DISK]\n\n"
 
 (
 echo g # Create a new empty DOS partition table
@@ -66,13 +66,13 @@ echo w # Write changes
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[MAKE FILESYSTEMS]\n"
+printf "\n[MAKE FILESYSTEMS]\n\n"
 
 mkfs.fat -F32 ${ARCHINSTALL_disk}1
 mkswap ${ARCHINSTALL_disk}2
@@ -81,13 +81,13 @@ mkfs.ext4 ${ARCHINSTALL_disk}3
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[MOUNT PARTITIONS]\n"
+printf "\n[MOUNT PARTITIONS]\n\n"
 
 mount ${ARCHINSTALL_disk}3 /mnt
 mkdir /mnt/boot
@@ -95,61 +95,61 @@ mount ${ARCHINSTALL_disk}1 /mnt/boot
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[INSTALL KERNEL]\n"
+printf "\n[INSTALL KERNEL]\n\n"
 
 pacstrap /mnt base linux linux-firmware
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[GENERATE FILESYSTEM TABLE]\n"
+printf "\n[GENERATE FILESYSTEM TABLE]\n\n"
 
 genfstab -U /mnt >> /mnt/etc/fstab
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[-> ENTER CHROOT /mnt]\n"
+printf "\n[-> ENTER CHROOT /mnt]\n\n"
 
 cat <<EOF > /install-part2.sh
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[SETUP LOCAL TIME & HW CLOCK]\n"
+printf "\n[SETUP LOCAL TIME & HW CLOCK]\n\n"
 
 ln -sf /usr/share/zoneinfo/$ARCHINSTALL_timezone /etc/localtime
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 hwclock --systohc
 
-printf "\n[SETUP SYSTEM LOCALE]\n"
+printf "\n[SETUP SYSTEM LOCALE]\n\n"
 
 sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 sed -i 's/#sv_SE.UTF-8 UTF-8/sv_SE.UTF-8 UTF-8/' /etc/locale.gen
@@ -157,13 +157,13 @@ locale-gen
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[SETUP HOSTNAME & HOSTS]\n"
+printf "\n[SETUP HOSTNAME & HOSTS]\n\n"
 
 echo $ARCHINSTALL_hostname > /etc/hostname
 echo "127.0.0.1    localhost" >> /etc/hosts
@@ -172,13 +172,13 @@ echo "127.0.1.1    $ARCHINSTALL_hostname.localdomain    $ARCHINSTALL_hostname" >
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[SETUP root & '$ARCHINSTALL_username']\n"
+printf "\n[SETUP root & '$ARCHINSTALL_username']\n\n"
 
 (
 echo $ARCHINSTALL_rootpwd
@@ -196,9 +196,9 @@ usermod -aG wheel,audio,video,storage,optical $ARCHINSTALL_username
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
@@ -207,13 +207,13 @@ sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[SETUP BOOTLOADER]\n"
+printf "\n[SETUP BOOTLOADER]\n\n"
 
 pacman -S --noconfirm ${ARCHINSTALL_cpu}-ucode
 pacman -S --noconfirm grub efibootmgr dosfstools os-prober mtools
@@ -221,9 +221,9 @@ grub-install --target=x86_64-efi --bootloader-id=grub_uefi --efi-directory=/boot
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
@@ -231,51 +231,51 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[INSTALL NETWORK MANAGER]\n"
+printf "\n[INSTALL NETWORK MANAGER]\n\n"
 
 pacman -S --noconfirm networkmanager
 systemctl enable NetworkManager
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[INSTALL WINDOW MANAGER]\n"
+printf "\n[INSTALL WINDOW MANAGER]\n\n"
 
 pacman -S --noconfirm mesa xorg $ARCHINSTALL_wmpackages
 localectl set-x11-keymap se
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[INSTALL DEVELOPMENT PACKAGES]\n"
+printf "\n[INSTALL DEVELOPMENT PACKAGES]\n\n"
 
 pacman -S --noconfirm $ARCHINSTALL_devpackages
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[INSTALL YAY (AUR)]\n"
+printf "\n[INSTALL YAY (AUR)]\n\n"
 
 #mkdir home/$ARCHINSTALL_username/git && cd home/$ARCHINSTALL_username/git
 #git clone https://aur.archlinux.org/yay && cd yay
@@ -283,25 +283,25 @@ printf "\n[INSTALL YAY (AUR)]\n"
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[SETUP CONFIGURATION]\n"
+printf "\n[SETUP CONFIGURATION]\n\n"
 
 # clone dotfiles etc.
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[ENABLE SERVICES]\n"
+printf "\n[ENABLE SERVICES]\n\n"
 
 for token in ${ARCHINSTALL_services}; do
     systemctl enable $service
@@ -309,13 +309,13 @@ done
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[<- EXIT CHROOT /mnt]\n"
+printf "\n[<- EXIT CHROOT /mnt]\n\n"
 exit 0
 EOF
 
@@ -325,20 +325,20 @@ arch-chroot /mnt /bin/bash /install-part2.sh
 rm /mnt/install-part2.sh
 rm /install-part2.sh
 
-printf "\n[UNMOUNT]\n"
+printf "\n[UNMOUNT]\n\n"
 
 umount -l /mnt/boot
 umount -l /mnt
 
 if [ "$?" = 0 ]
 then
-  printf "\n[OK]\n"
+  printf "\n[OK]\n\n"
 else
-  printf "\n[FAILED]\n"
+  printf "\n[FAILED]\n\n"
   exit 1
 fi
 
-printf "\n[INSTALLATION DONE]\n"
+printf "\n[INSTALLATION DONE]\n\n"
 
 read -p "DONE! Reboot? (y/n)." ARCHINSTALL_reboot
 
