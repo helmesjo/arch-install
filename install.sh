@@ -324,7 +324,7 @@ arch-chroot /mnt /bin/bash /install-part2.sh
 rm /mnt/install-part2.sh
 rm /install-part2.sh
 
-printf "\n[UNMOUNT & REBOOT]\n"
+printf "\n[UNMOUNT]\n"
 
 umount -l /mnt/boot
 umount -l /mnt
@@ -337,6 +337,13 @@ else
   exit 1
 fi
 
-read -p "DONE! Press ENTER to reboot." ARCHINSTALL_tmp
+printf "\n[INSTALLATION DONE]\n"
 
-reboot
+read -p "DONE! Reboot? (y/n)." ARCHINSTALL_reboot
+
+if [ "$ARCHINSTALL_reboot" = "y" ]
+then
+  reboot
+fi
+
+exit 0
