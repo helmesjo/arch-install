@@ -121,7 +121,7 @@ fi
 
 echo "-> ENTER CHROOT /mnt"
 
-cat <<EOF > /tmp/install-part2.sh
+cat <<EOF > /install-part2.sh
 if [ "$?" = 0 ]
 then
   echo "[OK]"
@@ -300,9 +300,11 @@ echo "<- EXIT CHROOT /mnt"
 exit 0
 EOF
 
-chmod +x /tmp/install-part2.sh
-cp /tmp/install-part2.sh /mnt/tmp/
-arch-chroot /mnt /bin/bash /tmp/install-part2.sh
+chmod +x /install-part2.sh
+cp /install-part2.sh /mnt
+arch-chroot /mnt /bin/bash /install-part2.sh
+rm /mnt/install-part2.sh
+rm /install-part2.sh
 
 echo "UNMOUNT & REBOOT"
 
