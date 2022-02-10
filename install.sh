@@ -27,7 +27,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "PARTITION DISK"
@@ -63,7 +63,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "MAKE FILESYSTEMS"
@@ -78,7 +78,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "MOUNT PARTITIONS"
@@ -92,7 +92,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "INSTALL KERNEL"
@@ -104,7 +104,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "GENERATE FILESYSTEM TABLE"
@@ -116,7 +116,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "-> ENTER CHROOT /mnt"
@@ -127,7 +127,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "SETUP LOCAL TIME & HW CLOCK"
@@ -139,7 +139,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 hwclock --systohc
 
@@ -154,7 +154,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "SETUP HOSTNAME & HOSTS"
@@ -169,7 +169,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "SETUP root & '$ARCHINSTALL_username'"
@@ -193,7 +193,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 pacman -S --noconfirm sudo
@@ -204,7 +204,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "SETUP BOOTLOADER"
@@ -218,7 +218,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 grub-mkconfig -o /boot/grub/grub.cfg
@@ -228,7 +228,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "INSTALL NETWORK MANAGER"
@@ -241,7 +241,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "INSTALL WINDOW MANAGER"
@@ -255,7 +255,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "INSTALL DEVELOPMENT PACKAGES"
@@ -267,7 +267,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "INSTALL YAY (AUR)"
@@ -281,7 +281,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "SETUP CONFIGURATION"
@@ -293,7 +293,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 echo "<- EXIT CHROOT /mnt"
@@ -314,7 +314,7 @@ then
   echo "[OK]"
 else
   echo "[FAILED]"
-  return 1
+  exit 1
 fi
 
 read -p "DONE! Press ENTER to reboot." ARCHINSTALL_tmp
