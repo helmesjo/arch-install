@@ -18,19 +18,19 @@ read -p "Select disk: " ARCHINSTALL_disk
 
 loadkeys $ARCHINSTALL_keymap
 
-echo "VERIFY INTERNET"
+echo "\n[VERIFY INTERNET]\n"
 
 ping -c1 -W2000 archlinux.org 2>/dev/null 1>/dev/null
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "PARTITION DISK"
+echo "\n[PARTITION DISK]\n"
 
 (
 echo g # Create a new empty DOS partition table
@@ -60,13 +60,13 @@ echo w # Write changes
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "MAKE FILESYSTEMS"
+echo "\n[MAKE FILESYSTEMS]\n"
 
 mkfs.fat -F32 ${ARCHINSTALL_disk}1
 mkswap ${ARCHINSTALL_disk}2
@@ -75,13 +75,13 @@ mkfs.ext4 ${ARCHINSTALL_disk}3
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "MOUNT PARTITIONS"
+echo "\n[MOUNT PARTITIONS]\n"
 
 mount ${ARCHINSTALL_disk}3 /mnt
 mkdir /mnt/boot
@@ -89,61 +89,61 @@ mount ${ARCHINSTALL_disk}1 /mnt/boot
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "INSTALL KERNEL"
+echo "\n[INSTALL KERNEL]\n"
 
 pacstrap /mnt base linux linux-firmware
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "GENERATE FILESYSTEM TABLE"
+echo "\n[GENERATE FILESYSTEM TABLE]\n"
 
 genfstab -U /mnt >> /mnt/etc/fstab
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "-> ENTER CHROOT /mnt"
+echo "\n[-> ENTER CHROOT /mnt]\n"
 
 cat <<EOF > /install-part2.sh
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "SETUP LOCAL TIME & HW CLOCK"
+echo "\n[SETUP LOCAL TIME & HW CLOCK]\n"
 
 ln -sf /usr/share/zoneinfo/$ARCHINSTALL_timezone /etc/localtime
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 hwclock --systohc
 
-echo "SETUP SYSTEM LOCALE"
+echo "\n[SETUP SYSTEM LOCALE]\n"
 
 sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 sed -i 's/#sv_SE.UTF-8 UTF-8/sv_SE.UTF-8 UTF-8/' /etc/locale.gen
@@ -151,13 +151,13 @@ locale-gen
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "SETUP HOSTNAME & HOSTS"
+echo "\n[SETUP HOSTNAME & HOSTS]\n"
 
 echo $ARCHINSTALL_hostname > /etc/hostname
 echo "127.0.0.1    localhost" >> /etc/hosts
@@ -166,13 +166,13 @@ echo "127.0.1.1    $ARCHINSTALL_hostname.localdomain    $ARCHINSTALL_hostname" >
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "SETUP root & '$ARCHINSTALL_username'"
+echo "\n[SETUP root & '$ARCHINSTALL_username']\n"
 
 (
 echo $ARCHINSTALL_rootpwd
@@ -190,9 +190,9 @@ usermod -aG wheel,audio,video,storage,optical $ARCHINSTALL_username
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
@@ -201,13 +201,13 @@ sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "SETUP BOOTLOADER"
+echo "\n[SETUP BOOTLOADER]\n"
 
 pacman -S --noconfirm ${ARCHINSTALL_cpu}-ucode
 pacman -S --noconfirm grub efibootmgr dosfstools os-prober mtools
@@ -215,9 +215,9 @@ grub-install --target=x86_64-efi --bootloader-id=grub_uefi --efi-directory=/boot
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
@@ -225,26 +225,26 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "INSTALL NETWORK MANAGER"
+echo "\n[INSTALL NETWORK MANAGER]\n"
 
 pacman -S --noconfirm networkmanager
 systemctl enable NetworkManager
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "INSTALL WINDOW MANAGER"
+echo "\n[INSTALL WINDOW MANAGER]\n"
 
 pacman -S --noconfirm mesa xorg i3 lightdm-gtk-greeter
 systemctl enable lightdm
@@ -252,25 +252,25 @@ systemctl enable lightdm
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "INSTALL DEVELOPMENT PACKAGES"
+echo "\n[INSTALL DEVELOPMENT PACKAGES]\n"
 
 pacman -S --noconfirm base-devel git kitty vim
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "INSTALL YAY (AUR)"
+echo "\n[INSTALL YAY (AUR)]\n"
 
 #mkdir home/$ARCHINSTALL_username/git && cd home/$ARCHINSTALL_username/git
 #git clone https://aur.archlinux.org/yay && cd yay
@@ -278,25 +278,25 @@ echo "INSTALL YAY (AUR)"
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "SETUP CONFIGURATION"
+echo "\n[SETUP CONFIGURATION]\n"
 
 # clone dotfiles etc.
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
-echo "<- EXIT CHROOT /mnt"
+echo "\n[<- EXIT CHROOT /mnt]\n"
 exit 0
 EOF
 
@@ -306,16 +306,16 @@ arch-chroot /mnt /bin/bash /install-part2.sh
 rm /mnt/install-part2.sh
 rm /install-part2.sh
 
-echo "UNMOUNT & REBOOT"
+echo "\n[UNMOUNT & REBOOT]\n"
 
 umount -l /mnt/boot
 umount -l /mnt
 
 if [ "$?" = 0 ]
 then
-  echo "[OK]"
+  echo "\n[OK]\n"
 else
-  echo "[FAILED]"
+  echo "\n[FAILED]\n"
   exit 1
 fi
 
