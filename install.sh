@@ -1,11 +1,17 @@
 #!/bin/sh
 
+log() {
+  termwidth="$(tput cols)"
+  padding="$(printf '%0.1s' ={1..500})"
+  printf '%*.*s %s %*.*s\n' 0 "$(((termwidth-2-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding"
+}
+
 verify_success () {
   if [ "$?" = 0 ]
   then
-    printf "\n[OK]\n\n"
+    log "[OK]"
   else
-    printf "\n[FAILED]\n\n"
+    log "[FAILED]"
     exit 1
   fi
 }
@@ -13,7 +19,7 @@ verify_success () {
 # ------------------------ DO NOT USE THIS!
 # ------------------------ IT WILL PROBABLY BREAK YOUR COMPUTER!
 
-printf "\n[VERIFY INTERNET]\n\n"
+log "[VERIFY INTERNET]"
 
 ping -c1 -W2000 archlinux.org 2>/dev/null 1>/dev/null
 
@@ -40,7 +46,7 @@ read -p "Select disk: " ARCHINSTALL_disk
 
 loadkeys $ARCHINSTALL_keymap
 
-printf "\n[PARTITION DISK]\n\n"
+log "[PARTITION DISK]"
 
 (
 echo g # Create a new empty DOS partition table
@@ -70,7 +76,7 @@ echo w # Write changes
 
 verify_success
 
-printf "\n[MAKE FILESYSTEMS]\n\n"
+log "[MAKE FILESYSTEMS]"
 
 mkfs.fat -F32 ${ARCHINSTALL_disk}1
 mkswap ${ARCHINSTALL_disk}2
@@ -79,7 +85,7 @@ mkfs.ext4 ${ARCHINSTALL_disk}3
 
 verify_success
 
-printf "\n[MOUNT PARTITIONS]\n\n"
+log "[MOUNT PARTITIONS]"
 
 mount ${ARCHINSTALL_disk}3 /mnt
 mkdir /mnt/boot
@@ -87,29 +93,29 @@ mount ${ARCHINSTALL_disk}1 /mnt/boot
 
 verify_success
 
-printf "\n[INSTALL KERNEL]\n\n"
+log "[INSTALL KERNEL]"
 
 pacstrap /mnt base linux linux-firmware
 
 verify_success
 
-printf "\n[GENERATE FILESYSTEM TABLE]\n\n"
+log "[GENERATE FILESYSTEM TABLE]"
 
 genfstab -U /mnt >> /mnt/etc/fstab
 
 verify_success
 
-printf "\n[-> ENTER CHROOT /mnt]\n\n"
+log "[-> ENTER CHROOT /mnt]"
 
 cat <<EOF > /install-part2.sh
-printf "\n[SETUP LOCAL TIME & HW CLOCK]\n\n"
+log "[SETUP LOCAL TIME & HW CLOCK]"
 
 ln -sf /usr/share/zoneinfo/$ARCHINSTALL_timezone /etc/localtime
 hwclock --systohc
 
 verify_success
 
-printf "\n[SETUP SYSTEM LOCALE]\n\n"
+log "[SETUP SYSTEM LOCALE]"
 
 sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 sed -i 's/#sv_SE.UTF-8 UTF-8/sv_SE.UTF-8 UTF-8/' /etc/locale.gen
@@ -117,7 +123,7 @@ locale-gen
 
 verify_success
 
-printf "\n[SETUP HOSTNAME & HOSTS]\n\n"
+log "[SETUP HOSTS]"
 
 echo $ARCHINSTALL_hostname > /etc/hostname
 echo "127.0.0.1    localhost" >> /etc/hosts
@@ -126,7 +132,7 @@ echo "127.0.1.1    $ARCHINSTALL_hostname.localdomain    $ARCHINSTALL_hostname" >
 
 verify_success
 
-printf "\n[SETUP root & '$ARCHINSTALL_username']\n\n"
+log "[SETUP USERS]"
 
 (
 echo $ARCHINSTALL_rootpwd
@@ -149,7 +155,7 @@ sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
 verify_success
 
-printf "\n[SETUP BOOTLOADER]\n\n"
+log "[SETUP BOOTLOADER]"
 
 pacman -S --noconfirm ${ARCHINSTALL_cpu}-ucode
 pacman -S --noconfirm grub efibootmgr dosfstools os-prober mtools
@@ -161,27 +167,27 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 verify_success
 
-printf "\n[INSTALL NETWORK MANAGER]\n\n"
+log "[INSTALL NETWORK MANAGER]"
 
 pacman -S --noconfirm networkmanager
 systemctl enable NetworkManager
 
 verify_success
 
-printf "\n[INSTALL WINDOW MANAGER]\n\n"
+log "[INSTALL WINDOW MANAGER]"
 
 pacman -S --noconfirm mesa xorg $ARCHINSTALL_wmpackages
 localectl set-x11-keymap se
 
 verify_success
 
-printf "\n[INSTALL DEVELOPMENT PACKAGES]\n\n"
+log "[INSTALL DEVELOPMENT PACKAGES]"
 
 pacman -S --noconfirm $ARCHINSTALL_devpackages
 
 verify_success
 
-printf "\n[INSTALL YAY (AUR)]\n\n"
+log "[INSTALL YAY (AUR)]"
 
 #mkdir home/$ARCHINSTALL_username/git && cd home/$ARCHINSTALL_username/git
 #git clone https://aur.archlinux.org/yay && cd yay
@@ -189,13 +195,13 @@ printf "\n[INSTALL YAY (AUR)]\n\n"
 
 verify_success
 
-printf "\n[SETUP CONFIGURATION]\n\n"
+log "[SETUP CONFIGURATION]"
 
 # clone dotfiles etc.
 
 verify_success
 
-printf "\n[ENABLE SERVICES]\n\n"
+log "[ENABLE SERVICES]"
 
 for service in ${ARCHINSTALL_services}; do
     systemctl enable $service
@@ -203,7 +209,7 @@ done
 
 verify_success
 
-printf "\n[<- EXIT CHROOT /mnt]\n\n"
+log "[EXIT CHROOT /mnt]"
 exit 0
 EOF
 
@@ -213,14 +219,14 @@ arch-chroot /mnt /bin/bash /install-part2.sh
 rm /mnt/install-part2.sh
 rm /install-part2.sh
 
-printf "\n[UNMOUNT]\n\n"
+log "[UNMOUNT]"
 
 umount -l /mnt/boot
 umount -l /mnt
 
 verify_success
 
-printf "\n[INSTALLATION DONE]\n\n"
+log "[INSTALLATION DONE]"
 
 read -p "DONE! Reboot? (y/n): " ARCHINSTALL_reboot
 
