@@ -300,6 +300,7 @@ echo "<- EXIT CHROOT /mnt"
 exit 0
 EOF
 
+chmod +x /tmp/install-part2.sh
 cp /tmp/install-part2.sh /mnt/tmp/
 arch-chroot /mnt /bin/bash /tmp/install-part2.sh
 
