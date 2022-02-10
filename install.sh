@@ -308,7 +308,6 @@ rm /install-part2.sh
 
 echo "UNMOUNT & REBOOT"
 
-exit
 umount -l /mnt/boot
 umount -l /mnt
 
