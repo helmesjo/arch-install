@@ -25,6 +25,8 @@ read -p "Root pwd: " ARCHINSTALL_rootpwd
 read -p "$ARCHINSTALL_username pwd: " ARCHINSTALL_userpwd
 read -p "CPU (amd or intel): " ARCHINSTALL_cpu
 
+printf "\n\n"
+
 fdisk -l
 read -p "Select disk: " ARCHINSTALL_disk
 
