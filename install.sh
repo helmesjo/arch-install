@@ -1,7 +1,13 @@
 #!/bin/sh
 
 verify_success () {
-  commands
+  if [ "$?" = 0 ]
+  then
+    printf "\n[OK]\n\n"
+  else
+    printf "\n[FAILED]\n\n"
+    exit 1
+  fi
 }
 
 # ------------------------ DO NOT USE THIS!
@@ -11,13 +17,7 @@ printf "\n[VERIFY INTERNET]\n\n"
 
 ping -c1 -W2000 archlinux.org 2>/dev/null 1>/dev/null
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 ARCHINSTALL_wmpackages="i3 lightdm-gtk-greeter"
 ARCHINSTALL_devpackages="base-devel git kitty vim"
@@ -68,13 +68,7 @@ echo 20 # Partition type 'Linux filesystem'
 echo w # Write changes
 ) | fdisk $ARCHINSTALL_disk
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[MAKE FILESYSTEMS]\n\n"
 
@@ -83,13 +77,7 @@ mkswap ${ARCHINSTALL_disk}2
 swapon ${ARCHINSTALL_disk}2
 mkfs.ext4 ${ARCHINSTALL_disk}3
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[MOUNT PARTITIONS]\n\n"
 
@@ -97,61 +85,29 @@ mount ${ARCHINSTALL_disk}3 /mnt
 mkdir /mnt/boot
 mount ${ARCHINSTALL_disk}1 /mnt/boot
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[INSTALL KERNEL]\n\n"
 
 pacstrap /mnt base linux linux-firmware
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[GENERATE FILESYSTEM TABLE]\n\n"
 
 genfstab -U /mnt >> /mnt/etc/fstab
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[-> ENTER CHROOT /mnt]\n\n"
 
 cat <<EOF > /install-part2.sh
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
-
 printf "\n[SETUP LOCAL TIME & HW CLOCK]\n\n"
 
 ln -sf /usr/share/zoneinfo/$ARCHINSTALL_timezone /etc/localtime
-
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
 hwclock --systohc
+
+verify_success
 
 printf "\n[SETUP SYSTEM LOCALE]\n\n"
 
@@ -159,13 +115,7 @@ sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 sed -i 's/#sv_SE.UTF-8 UTF-8/sv_SE.UTF-8 UTF-8/' /etc/locale.gen
 locale-gen
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[SETUP HOSTNAME & HOSTS]\n\n"
 
@@ -174,13 +124,7 @@ echo "127.0.0.1    localhost" >> /etc/hosts
 echo "::1          localhost" >> /etc/hosts
 echo "127.0.1.1    $ARCHINSTALL_hostname.localdomain    $ARCHINSTALL_hostname" >> /etc/hosts
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[SETUP root & '$ARCHINSTALL_username']\n\n"
 
@@ -198,24 +142,12 @@ echo $ARCHINSTALL_userpwd
 
 usermod -aG wheel,audio,video,storage,optical $ARCHINSTALL_username
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 pacman -S --noconfirm sudo
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[SETUP BOOTLOADER]\n\n"
 
@@ -223,61 +155,31 @@ pacman -S --noconfirm ${ARCHINSTALL_cpu}-ucode
 pacman -S --noconfirm grub efibootmgr dosfstools os-prober mtools
 grub-install --target=x86_64-efi --bootloader-id=grub_uefi --efi-directory=/boot --recheck
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 grub-mkconfig -o /boot/grub/grub.cfg
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[INSTALL NETWORK MANAGER]\n\n"
 
 pacman -S --noconfirm networkmanager
 systemctl enable NetworkManager
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[INSTALL WINDOW MANAGER]\n\n"
 
 pacman -S --noconfirm mesa xorg $ARCHINSTALL_wmpackages
 localectl set-x11-keymap se
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[INSTALL DEVELOPMENT PACKAGES]\n\n"
 
 pacman -S --noconfirm $ARCHINSTALL_devpackages
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[INSTALL YAY (AUR)]\n\n"
 
@@ -285,25 +187,13 @@ printf "\n[INSTALL YAY (AUR)]\n\n"
 #git clone https://aur.archlinux.org/yay && cd yay
 #sudo -H -u $ARCHINSTALL_username makepkg -sri
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[SETUP CONFIGURATION]\n\n"
 
 # clone dotfiles etc.
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[ENABLE SERVICES]\n\n"
 
@@ -311,13 +201,7 @@ for service in ${ARCHINSTALL_services}; do
     systemctl enable $service
 done
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[<- EXIT CHROOT /mnt]\n\n"
 exit 0
@@ -334,13 +218,7 @@ printf "\n[UNMOUNT]\n\n"
 umount -l /mnt/boot
 umount -l /mnt
 
-if [ "$?" = 0 ]
-then
-  printf "\n[OK]\n\n"
-else
-  printf "\n[FAILED]\n\n"
-  exit 1
-fi
+verify_success
 
 printf "\n[INSTALLATION DONE]\n\n"
 
