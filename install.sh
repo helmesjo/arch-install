@@ -1,5 +1,9 @@
 #!/bin/sh
 
+verify_success () {
+  commands
+}
+
 # ------------------------ DO NOT USE THIS!
 # ------------------------ IT WILL PROBABLY BREAK YOUR COMPUTER!
 
@@ -303,7 +307,7 @@ fi
 
 printf "\n[ENABLE SERVICES]\n\n"
 
-for token in ${ARCHINSTALL_services}; do
+for service in ${ARCHINSTALL_services}; do
     systemctl enable $service
 done
 
@@ -340,7 +344,7 @@ fi
 
 printf "\n[INSTALLATION DONE]\n\n"
 
-read -p "DONE! Reboot? (y/n)." ARCHINSTALL_reboot
+read -p "DONE! Reboot? (y/n): " ARCHINSTALL_reboot
 
 if [ "$ARCHINSTALL_reboot" = "y" ]
 then
