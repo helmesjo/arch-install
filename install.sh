@@ -205,7 +205,7 @@ done
 
 verify_success
 
-log "[EXIT CHROOT /mnt]"
+log "[<- EXIT CHROOT /mnt]"
 exit 0
 EOF
 
