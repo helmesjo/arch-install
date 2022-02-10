@@ -31,8 +31,6 @@ ARCHINSTALL_services="lightdm"
 
 read -p "Hostname: " ARCHINSTALL_hostname
 read -p "Username: " ARCHINSTALL_username
-read -p "Keymap (default: sv-latin1): " ARCHINSTALL_keymap
-ARCHINSTALL_keymap="${ARCHINSTALL_keymap:=sv-latin1}"
 read -p "Timezone (default: Europe/Amsterdam): " ARCHINSTALL_timezone
 ARCHINSTALL_timezone="${ARCHINSTALL_timezone:=Europe/Amsterdam}"
 read -p "Root pwd: " ARCHINSTALL_rootpwd
@@ -41,12 +39,10 @@ read -p "CPU (amd or intel): " ARCHINSTALL_cpu
 
 printf "\n\n"
 
+log "[PARTITION DISK]"
+
 fdisk -l
 read -p "Select disk: " ARCHINSTALL_disk
-
-loadkeys $ARCHINSTALL_keymap
-
-log "[PARTITION DISK]"
 
 (
 echo g # Create a new empty DOS partition table
