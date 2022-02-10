@@ -121,10 +121,9 @@ else
   return 1
 fi
 
-echo "CHROOT TO MOUNTED FILESYSTEM"
+echo "-> ENTER CHROOT /mnt"
 
-arch-chroot /mnt
-
+cat <<EOF > /tmp/install-part2.sh
 if [ "$?" = 0 ]
 then
   echo "[OK]"
@@ -299,6 +298,11 @@ else
   return 1
 fi
 
+echo "<- EXIT CHROOT /mnt"
+EOF
+
+arch-chroot /mnt /tmp/install-part2.sh
+
 echo "UNMOUNT & REBOOT"
 
 exit
@@ -312,5 +316,7 @@ else
   echo "[FAILED]"
   return 1
 fi
+
+read -p "DONE! Press ENTER to reboot." ARCHINSTALL_tmp
 
 reboot

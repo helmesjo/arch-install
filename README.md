@@ -1,5 +1,11 @@
 Arch Linux Install (EFI)
 
+## Runing installer script
+
+`bash <(curl -s https://raw.githubusercontent.com/helmesjo/arch-install/main/install.sh)`
+
+## Steps performed:
+
 1. Set keyboard layout
     * `loadkeys sv-latin1`
 2. Verify internet connection
