@@ -297,6 +297,7 @@ else
 fi
 
 echo "<- EXIT CHROOT /mnt"
+exit 0
 EOF
 
 arch-chroot /mnt /bin/bash /tmp/install-part2.sh
