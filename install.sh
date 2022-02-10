@@ -253,6 +253,7 @@ fi
 printf "\n[INSTALL WINDOW MANAGER]\n"
 
 pacman -S --noconfirm mesa xorg $ARCHINSTALL_wmpackages
+localectl set-x11-keymap se
 
 if [ "$?" = 0 ]
 then
