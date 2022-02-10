@@ -41,7 +41,6 @@ echo +550M  # 550MB for EFI
 echo t # Change type
 echo 1 # Partition number
 echo 1 # Partition type 'EFI System'
-
 echo n # Add swap partition
 echo 2 # Partition number
 echo   # First sector (accept default)
@@ -49,7 +48,6 @@ echo +2G  # 2GB for swap
 echo t # Change type
 echo 2 # Partition number
 echo 19 # Partition type 'Linux swap'
-
 echo n # Add root partition
 echo 3 # Partition number
 echo   # First sector (accept default)
