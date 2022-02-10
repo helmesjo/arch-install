@@ -37,7 +37,7 @@ echo g # Create a new empty DOS partition table
 echo n # Add EFI partition
 echo 1 # Partition number
 echo   # First sector (accept default)
-echo +550M  # 550MB for EFI
+echo +550M # 550MB for EFI
 echo t # Change type
 echo 1 # Partition number
 echo 1 # Partition type 'EFI System'
@@ -121,7 +121,7 @@ fi
 
 echo "-> ENTER CHROOT /mnt"
 
-cat <<EOF > /mnt/tmp/install-part2.sh
+cat <<EOF > /tmp/install-part2.sh
 if [ "$?" = 0 ]
 then
   echo "[OK]"
@@ -300,6 +300,7 @@ echo "<- EXIT CHROOT /mnt"
 exit 0
 EOF
 
+cp /tmp/install-part2.sh /mnt/tmp/
 arch-chroot /mnt /bin/bash /tmp/install-part2.sh
 
 echo "UNMOUNT & REBOOT"
