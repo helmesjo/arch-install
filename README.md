@@ -31,6 +31,7 @@ Arch Linux Install (EFI)
     4. mkfs.ext4 /dev/sda3
 7. Mount partitions
     * `mount /dev/sda3 /mnt`
+    * `mkdir /mnt/boot`
     * `mount /dev/sda1 /mnt/boot`
 8. Install base package, kernel and firmware
     * `pacstrap /mnt base linux linux-firmware`
@@ -85,19 +86,19 @@ Arch Linux Install (EFI)
 21. Install network manager
     1. `pacman -S --noconfirm networkmanager`
     2. `systemctl enable NetworkManager`
-23. Install development packages
-    * `pacman -S --noconfirm base-devel git kitty vim`
-23. Install `yay` (AUR helper)
-    1. `mkdir ~/git && cd ~/git`
-    2. `git clone https://aur.archlinux.org/yay && cd yay`
-    3. `makepkg -sri`
 22. Install Window & Display Manager, and set key layout for system (x11)
     1. `pacman -S --noconfirm mesa xorg i3 lightdm-gtk-greeter`
     2. `systemctl enable lightdm`
     3. `localectl set-x11-keymap se`
-24. Setup dotfiles
+23. Install development packages
+    * `pacman -S --noconfirm base-devel git kitty vim`
+24. Install `yay` (AUR helper)
+    1. `mkdir ~/git && cd ~/git`
+    2. `git clone https://aur.archlinux.org/yay && cd yay`
+    3. `makepkg -sri`
+25. Setup dotfiles
     1. `cd ...`
-24. Exit chroot, unmount & reboot
+26. Exit chroot, unmount & reboot
     1. `exit`
     2. `umount -l /mnt/boot`
     3. `umount -l /mnt`
