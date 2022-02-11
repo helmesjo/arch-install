@@ -177,7 +177,6 @@ verify_success
 log "[INSTALL WINDOW MANAGER]"
 
 pacman -S --noconfirm mesa xorg $ARCHINSTALL_wmpackages
-localectl set-x11-keymap se
 
 verify_success
 
