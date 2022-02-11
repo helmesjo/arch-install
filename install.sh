@@ -16,8 +16,10 @@ verify_success () {
   fi
 }
 
-# ------------------------ DO NOT USE THIS!
-# ------------------------ IT WILL PROBABLY BREAK YOUR COMPUTER!
+log ""
+log "DO NOT USE THIS"
+log "IT CAN BREAK YOUR COMPUTER"
+log ""
 
 log "[VERIFY INTERNET]"
 
