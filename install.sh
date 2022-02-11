@@ -111,14 +111,16 @@ verify_success
 log "[-> ENTER CHROOT /mnt]"
 
 cat <<EOF > /install-part2.sh
+#!/bin/sh
+
 log() {
-  termwidth="$(tput cols)"
-  padding="$(printf '%0.1s' ={1..500})"
-  printf '%*.*s %s %*.*s\n' 0 "$(((termwidth-2-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding"
+  termwidth="\$(tput cols)"
+  padding="\$(printf '%0.1s' ={1..500})"
+  printf '%*.*s %s %*.*s\n' 0 "\$(((termwidth-2-\${#1})/2))" "\$padding" "\$1" 0 "\$(((termwidth-1-\${#1})/2))" "\$padding"
 }
 
 verify_success () {
-  if [ "$?" = 0 ]
+  if [ "\$?" = 0 ]
   then
     log "[OK]"
   else
@@ -245,7 +247,7 @@ verify_success
 log "[ENABLE SERVICES: $ARCHINSTALL_services]"
 
 for service in ${ARCHINSTALL_services}; do
-    systemctl enable $service
+    systemctl enable \$service
 done
 
 verify_success
