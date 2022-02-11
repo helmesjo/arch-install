@@ -10,7 +10,7 @@ log() {
   color="${2:-$cyn}"
   termwidth="$(tput cols)"
   padding="$(printf '%0.1s' ={1..500})"
-  printf '\n%b %*.*s %s %*.*s %b\n' ${color} 0 "$(((termwidth-6-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding" ${end}
+  printf '\n%b%*.*s %s %*.*s%b\n' ${color} 0 "$(((termwidth-6-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding" ${end}
 }
 
 log_result() {
@@ -37,10 +37,10 @@ wait_for_confirm () {
   printf "\n%s" ""
 }
 
-log ""
-log "DO NOT USE THIS"
-log "IT CAN BREAK YOUR COMPUTER" ${red}
-log ""
+log "DO NOT USE THIS" ${cyn}
+log "IT CAN BREAK YOUR COMPUTER" ${cyn}
+
+printf "\n%s" ""
 
 log "[VERIFY INTERNET]"
 
