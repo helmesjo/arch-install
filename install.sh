@@ -110,6 +110,22 @@ verify_success
 log "[-> ENTER CHROOT /mnt]"
 
 cat <<EOF > /install-part2.sh
+log() {
+  termwidth="$(tput cols)"
+  padding="$(printf '%0.1s' ={1..500})"
+  printf '%*.*s %s %*.*s\n' 0 "$(((termwidth-2-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding"
+}
+
+verify_success () {
+  if [ "$?" = 0 ]
+  then
+    log "[OK]"
+  else
+    log "[FAILED]"
+    exit 1
+  fi
+}
+
 log "[SETUP LOCAL TIME & HW CLOCK]"
 
 ln -sf /usr/share/zoneinfo/$ARCHINSTALL_timezone /etc/localtime
@@ -176,13 +192,13 @@ systemctl enable NetworkManager
 
 verify_success
 
-log "[INSTALL WINDOW MANAGER]"
+log "[INSTALL WINDOW PACKAGES: $ARCHINSTALL_wmpackages]"
 
 pacman -S --noconfirm mesa xorg $ARCHINSTALL_wmpackages
 
 verify_success
 
-log "[INSTALL DEVELOPMENT PACKAGES]"
+log "[INSTALL DEVELOPMENT PACKAGES: $ARCHINSTALL_devpackages]"
 
 pacman -S --noconfirm $ARCHINSTALL_devpackages
 
@@ -202,7 +218,7 @@ log "[SETUP CONFIGURATION]"
 
 verify_success
 
-log "[ENABLE SERVICES]"
+log "[ENABLE SERVICES: $ARCHINSTALL_services]"
 
 for service in ${ARCHINSTALL_services}; do
     systemctl enable $service
