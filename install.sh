@@ -305,6 +305,8 @@ arch-chroot /mnt /bin/bash /install-part2.sh
 rm /mnt/install-part2.sh
 rm /install-part2.sh
 
+ARCHINSTALL_chrootresult="$?"
+
 log "[UNMOUNT]"
 
 umount -l /mnt/boot
@@ -314,13 +316,18 @@ verify_success
 
 printf "\n\n"
 
-log "[INSTALLATION DONE]"
-
-read -p "DONE! Reboot? (y/n): " ARCHINSTALL_reboot
-
-if [ "$ARCHINSTALL_reboot" = "y" ]
+if [ "$ARCHINSTALL_chrootresult" = 0 ]
 then
-  reboot
-fi
+  log "[INSTALLATION DONE]" ${grn}
 
-exit 0
+  read -p "Reboot? (y/n): " ARCHINSTALL_reboot
+  if [ "$ARCHINSTALL_reboot" = "y" ]
+  then
+    reboot
+  fi
+
+  exit 0
+else
+  log "[INSTALLATION FAILED]" ${red}
+  exit 1
+fi
