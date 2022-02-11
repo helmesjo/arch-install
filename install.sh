@@ -31,8 +31,9 @@ verify_success
 
 printf "\n\n"
 
-ARCHINSTALL_wmpackages="mesa xorg i3 lightdm-gtk-greeter"
 ARCHINSTALL_devpackages="base-devel git kitty vim"
+ARCHINSTALL_wmpackages="mesa xorg i3 lightdm-gtk-greeter"
+ARCHINSTALL_aurpackages="rlaunch"
 ARCHINSTALL_services="lightdm"
 
 read -p "Hostname: " ARCHINSTALL_hostname
@@ -126,6 +127,14 @@ verify_success () {
   fi
 }
 
+disable_passwd () {
+  sed -i 's/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
+}
+
+enable_passwd () {
+  sed -i 's/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
+}
+
 log "[SETUP LOCAL TIME & HW CLOCK]"
 
 ln -sf /usr/share/zoneinfo/$ARCHINSTALL_timezone /etc/localtime
@@ -192,25 +201,40 @@ systemctl enable NetworkManager
 
 verify_success
 
-log "[INSTALL WINDOW PACKAGES: $ARCHINSTALL_wmpackages]"
-
-pacman -S --noconfirm $ARCHINSTALL_wmpackages
-
-verify_success
-
 log "[INSTALL DEVELOPMENT PACKAGES: $ARCHINSTALL_devpackages]"
 
 pacman -S --noconfirm $ARCHINSTALL_devpackages
 
 verify_success
 
-log "[INSTALL YAY (AUR)]"
+log "[INSTALL WINDOW PACKAGES: $ARCHINSTALL_wmpackages]"
 
-#mkdir home/$ARCHINSTALL_username/git && cd home/$ARCHINSTALL_username/git
-#git clone https://aur.archlinux.org/yay && cd yay
-#sudo -H -u $ARCHINSTALL_username makepkg -sri
+pacman -S --noconfirm $ARCHINSTALL_wmpackages
 
 verify_success
+
+# -----------------------------------
+# Temporarily disable password prompt
+disable_passwd
+
+log "[INSTALL AUR HELPER: yay]"
+
+su -c 'git clone https://aur.archlinux.org/yay /home/$ARCHINSTALL_username/git/yay' $ARCHINSTALL_username
+su -c 'cd /home/$ARCHINSTALL_username/git/yay && makepkg -Acs --noconfirm' $ARCHINSTALL_username
+pacman -U --noconfirm /home/$ARCHINSTALL_username/git/yay/*.pkg.tar.zst
+
+verify_success
+
+rm -rf /home/$ARCHINSTALL_username/git
+
+log "[INSTALL AUR PACKAGES: $ARCHINSTALL_aurpackages]"
+
+su -c 'yay -S --noconfirm $ARCHINSTALL_aurpackages' $ARCHINSTALL_username
+verify_success
+
+enable_passwd
+# Re-enable password prompt
+# -----------------------------------
 
 log "[SETUP CONFIGURATION]"
 
