@@ -25,7 +25,7 @@ verify_success () {
 
 log ""
 log "DO NOT USE THIS"
-log "IT CAN BREAK YOUR COMPUTER"
+log "IT CAN BREAK YOUR COMPUTER" ${red}
 log ""
 
 printf "\n\n"
@@ -38,10 +38,10 @@ verify_success
 
 printf "\n\n"
 
-ARCHINSTALL_devpackages="base-devel git kitty vim"
-ARCHINSTALL_wmpackages="mesa xorg i3 lightdm-gtk-greeter"
-ARCHINSTALL_aurpackages="rlaunch"
-ARCHINSTALL_services="lightdm"
+ARCHINSTALL_devpackages="base-devel"
+ARCHINSTALL_default_pacpackages="git kitty vim mesa xorg i3 lightdm-gtk-greeter"
+ARCHINSTALL_default_aurpackages="rlaunch"
+ARCHINSTALL_default_services="lightdm"
 
 read -p "Hostname: " ARCHINSTALL_hostname
 read -p "Username: " ARCHINSTALL_username
@@ -50,6 +50,15 @@ ARCHINSTALL_timezone="${ARCHINSTALL_timezone:=Europe/Amsterdam}"
 read -p "Root pwd: " ARCHINSTALL_rootpwd
 read -p "$ARCHINSTALL_username pwd: " ARCHINSTALL_userpwd
 read -p "CPU (amd or intel): " ARCHINSTALL_cpu
+
+read -p "Pacman packages (default: $ARCHINSTALL_default_pacpackages): " ARCHINSTALL_pacpackages
+ARCHINSTALL_pacpackages="${ARCHINSTALL_pacpackages:=$ARCHINSTALL_default_pacpackages}"
+
+read -p "AUR packages (default: $ARCHINSTALL_default_aurpackages): " ARCHINSTALL_aurpackages
+ARCHINSTALL_aurpackages="${ARCHINSTALL_aurpackages:=$ARCHINSTALL_default_aurpackages}"
+
+read -p "Auto-enable services (default: $ARCHINSTALL_default_services): " ARCHINSTALL_services
+ARCHINSTALL_services="${ARCHINSTALL_services:=$ARCHINSTALL_default_services}"
 
 printf "\n\n"
 
@@ -223,9 +232,9 @@ pacman -S --noconfirm $ARCHINSTALL_devpackages
 
 verify_success
 
-log "[INSTALL WINDOW PACKAGES: $ARCHINSTALL_wmpackages]"
+log "[INSTALL WINDOW PACKAGES: $ARCHINSTALL_pacpackages]"
 
-pacman -S --noconfirm $ARCHINSTALL_wmpackages
+pacman -S --noconfirm $ARCHINSTALL_pacpackages
 
 verify_success
 
