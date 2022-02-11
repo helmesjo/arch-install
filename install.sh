@@ -31,7 +31,7 @@ verify_success
 
 printf "\n\n"
 
-ARCHINSTALL_wmpackages="i3 lightdm-gtk-greeter"
+ARCHINSTALL_wmpackages="mesa xorg i3 lightdm-gtk-greeter"
 ARCHINSTALL_devpackages="base-devel git kitty vim"
 ARCHINSTALL_services="lightdm"
 
@@ -194,7 +194,7 @@ verify_success
 
 log "[INSTALL WINDOW PACKAGES: $ARCHINSTALL_wmpackages]"
 
-pacman -S --noconfirm mesa xorg $ARCHINSTALL_wmpackages
+pacman -S --noconfirm $ARCHINSTALL_wmpackages
 
 verify_success
 
