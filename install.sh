@@ -21,6 +21,8 @@ log "DO NOT USE THIS"
 log "IT CAN BREAK YOUR COMPUTER"
 log ""
 
+printf "\n\n"
+
 log "[VERIFY INTERNET]"
 
 ping -c1 -W2000 archlinux.org 2>/dev/null 1>/dev/null
