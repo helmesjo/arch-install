@@ -10,7 +10,7 @@ log() {
   color="${2:-$cyn}"
   termwidth="$(tput cols)"
   padding="$(printf '%0.1s' ={1..500})"
-  printf '%b %*.*s %s %*.*s %b\n' ${color} 0 "$(((termwidth-6-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding" ${end}
+  printf '\n%b %*.*s %s %*.*s %b\n' ${color} 0 "$(((termwidth-6-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding" ${end}
 }
 
 verify_success () {
@@ -32,8 +32,6 @@ log ""
 log "DO NOT USE THIS"
 log "IT CAN BREAK YOUR COMPUTER" ${red}
 log ""
-
-printf "\n\n"
 
 log "[VERIFY INTERNET]"
 
@@ -321,8 +319,6 @@ umount -l /mnt/boot
 umount -l /mnt
 
 verify_success
-
-printf "\n\n"
 
 if [ "$ARCHINSTALL_chrootresult" = 0 ]
 then
