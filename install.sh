@@ -42,11 +42,16 @@ ARCHINSTALL_devpackages="base-devel"
 ARCHINSTALL_default_pacpackages="git kitty vim mesa xorg i3 lightdm-gtk-greeter"
 ARCHINSTALL_default_aurpackages="rlaunch"
 ARCHINSTALL_default_services="lightdm"
+ARCHINSTALL_default_timezone="Europe/Amsterdam"
+ARCHINSTALL_default_keymap="sv-latin1"
+ARCHINSTALL_proceed="n"
 
 read -p "Hostname: " ARCHINSTALL_hostname
 read -p "Username: " ARCHINSTALL_username
-read -p "Timezone (default: Europe/Amsterdam): " ARCHINSTALL_timezone
-ARCHINSTALL_timezone="${ARCHINSTALL_timezone:=Europe/Amsterdam}"
+read -p "Timezone (default: $ARCHINSTALL_default_timezone): " ARCHINSTALL_timezone
+ARCHINSTALL_timezone="${ARCHINSTALL_timezone:=$ARCHINSTALL_default_timezone}"
+read -p "Keymap (default: $ARCHINSTALL_default_keymap): " ARCHINSTALL_keymap
+ARCHINSTALL_keymap="${ARCHINSTALL_keymap:=$ARCHINSTALL_default_keymap}"
 read -p "Root pwd: " ARCHINSTALL_rootpwd
 read -p "$ARCHINSTALL_username pwd: " ARCHINSTALL_userpwd
 read -p "CPU (amd or intel): " ARCHINSTALL_cpu
@@ -282,6 +287,8 @@ enable_passwd
 # -----------------------------------
 
 log "[SETUP CONFIGURATION]"
+
+localectl set-keymap $ARCHINSTALL_keymap
 
 # clone dotfiles etc.
 
