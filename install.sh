@@ -36,7 +36,7 @@ ping -c1 -W2000 archlinux.org 2>/dev/null 1>/dev/null
 
 verify_success
 
-printf "\n\n"
+log "[OPTIONS]"
 
 ARCHINSTALL_devpackages="base-devel"
 ARCHINSTALL_default_pacpackages="git kitty vim mesa xorg i3 lightdm-gtk-greeter"
@@ -60,7 +60,27 @@ ARCHINSTALL_aurpackages="${ARCHINSTALL_aurpackages:=$ARCHINSTALL_default_aurpack
 read -p "Auto-enable services (default: $ARCHINSTALL_default_services): " ARCHINSTALL_services
 ARCHINSTALL_services="${ARCHINSTALL_services:=$ARCHINSTALL_default_services}"
 
-printf "\n\n"
+log "[VERIFY OPTIONS]"
+
+printf '%b%s %b\t%s\n' ${mag} "Hostname:           " ${end} "$ARCHINSTALL_hostname " 
+printf '%b%s %b\t%s\n' ${mag} "Username:           " ${end} "$ARCHINSTALL_username "
+printf '%b%s %b\t%s\n' ${mag} "Timezone:           " ${end} "$ARCHINSTALL_timezone "
+printf '%b%s %b\t%s\n' ${mag} "Root pwd:           " ${end} "$ARCHINSTALL_rootpwd "
+printf '%b%s %b\t%s\n' ${mag} "User pwd:           " ${end} "$ARCHINSTALL_userpwd "
+printf '%b%s %b\t%s\n' ${mag} "CPU:                " ${end} "$ARCHINSTALL_cpu "
+printf '%b%s %b\t%s\n' ${mag} "Pacman packages:    " ${end} "$ARCHINSTALL_pacpackages "
+printf '%b%s %b\t%s\n' ${mag} "AUR packages:       " ${end} "$ARCHINSTALL_aurpackages "
+printf '%b%s %b\t%s\n' ${mag} "Services:           " ${end} "$ARCHINSTALL_services "
+
+read -p "Start installation? (y/n): " ARCHINSTALL_startinstallation
+
+if [ "$ARCHINSTALL_startinstallation" = "n" ]
+then
+  printf "Installation aborted."
+  exit 0
+fi
+
+verify_success
 
 log "[PARTITION DISK]"
 
