@@ -23,6 +23,11 @@ verify_success () {
   fi
 }
 
+wait_for_confirm () {
+  prompt="${1:-"Press ENTER to continue..."}"
+  read -p "\n$prompt"
+}
+
 log ""
 log "DO NOT USE THIS"
 log "IT CAN BREAK YOUR COMPUTER" ${red}
@@ -77,20 +82,16 @@ printf '%b%s %b\t%s\n' ${mag} "Pacman packages:    " ${end} "$ARCHINSTALL_pacpac
 printf '%b%s %b\t%s\n' ${mag} "AUR packages:       " ${end} "$ARCHINSTALL_aurpackages "
 printf '%b%s %b\t%s\n' ${mag} "Services:           " ${end} "$ARCHINSTALL_services "
 
-read -p "Start installation? (y/n): " ARCHINSTALL_startinstallation
-
-if [ "$ARCHINSTALL_startinstallation" = "n" ]
-then
-  printf "Installation aborted."
-  exit 0
-fi
-
-verify_success
+wait_for_confirm
 
 log "[PARTITION DISK]"
 
 fdisk -l
-read -p "Select disk: " ARCHINSTALL_disk
+read -p "\nSelect disk: " ARCHINSTALL_disk
+
+printf '%b%s %b\t%s\n' ${mag} "Disk:               " ${end} "$ARCHINSTALL_disk "
+
+wait_for_confirm
 
 (
 echo g # Create a new empty DOS partition table
@@ -327,13 +328,8 @@ if [ "$ARCHINSTALL_chrootresult" = 0 ]
 then
   log "[INSTALLATION DONE]" ${grn}
 
-  read -p "Reboot? (y/n): " ARCHINSTALL_reboot
-  if [ "$ARCHINSTALL_reboot" = "y" ]
-  then
-    reboot
-  fi
-
-  exit 0
+  wait_for_confirm "Press ENTER to reboot..."
+  reboot
 else
   log "[INSTALLATION FAILED]" ${red}
   exit 1
