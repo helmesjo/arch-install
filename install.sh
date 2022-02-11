@@ -16,10 +16,10 @@ verify_success () {
   fi
 }
 
-log ""
+log "=="
 log "DO NOT USE THIS"
 log "IT CAN BREAK YOUR COMPUTER"
-log ""
+log "=="
 
 printf "\n\n"
 
@@ -28,6 +28,8 @@ log "[VERIFY INTERNET]"
 ping -c1 -W2000 archlinux.org 2>/dev/null 1>/dev/null
 
 verify_success
+
+printf "\n\n"
 
 ARCHINSTALL_wmpackages="i3 lightdm-gtk-greeter"
 ARCHINSTALL_devpackages="base-devel git kitty vim"
@@ -224,6 +226,8 @@ umount -l /mnt/boot
 umount -l /mnt
 
 verify_success
+
+printf "\n\n"
 
 log "[INSTALLATION DONE]"
 
