@@ -2,7 +2,7 @@
 
 cyn=$'\e[1;36m'
 mag=$'\e[1;35m'
-red=$'\e[5;31m'
+red=$'\e[1;31m'
 grn=$'\e[1;32m'
 end=$'\e[0m'
 
@@ -151,14 +151,14 @@ cat <<EOF > /install-part2.sh
 
 cyn=$'\e[1;36m'
 mag=$'\e[1;35m'
-red=$'\e[5;31m'
+red=$'\e[1;31m'
 grn=$'\e[1;32m'
 end=$'\e[0m'
 
 log() {
   color="\${2:-\$cyn}"
   termwidth="\$(tput cols)"
-  padding="\$(printf '%0.1s' ={1..500})"
+  padding="\$(printf '%0.1s' -{1..500})"
   printf '%b %*.*s %s %*.*s %b\n' \${color} 0 "\$(((termwidth-6-\${#1})/2))" "\$padding" "\$1" 0 "\$(((termwidth-1-\${#1})/2))" "\$padding" \${end}
 }
 
