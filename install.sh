@@ -13,6 +13,13 @@ log() {
   printf '\n%b %*.*s %s %*.*s %b\n' ${color} 0 "$(((termwidth-6-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding" ${end}
 }
 
+log_result() {
+  color="${3:-$mag}"
+  termwidth="$(tput cols)"
+  padding="$(printf '%0.1s' .{1..500})"
+  printf '%b%s%*.*s%b%s\n' ${color} "$1" 0 "$(( ${#1} < 26 ? 26-${#1} : 2))" "$padding" ${end} "$2"
+}
+
 verify_success () {
   if [ "$?" = 0 ]
   then
@@ -25,7 +32,9 @@ verify_success () {
 
 wait_for_confirm () {
   prompt="${1:-"Press ENTER to continue..."}"
-  read -p "\n$prompt"
+  printf "\n%s" ""
+  read -p "$prompt"
+  printf "\n%s" ""
 }
 
 log ""
@@ -70,15 +79,15 @@ ARCHINSTALL_services="${ARCHINSTALL_services:=$ARCHINSTALL_default_services}"
 
 log "[VERIFY OPTIONS]"
 
-printf '%b%s %b\t%s\n' ${mag} "Hostname:           " ${end} "$ARCHINSTALL_hostname " 
-printf '%b%s %b\t%s\n' ${mag} "Username:           " ${end} "$ARCHINSTALL_username "
-printf '%b%s %b\t%s\n' ${mag} "Timezone:           " ${end} "$ARCHINSTALL_timezone "
-printf '%b%s %b\t%s\n' ${mag} "Root pwd:           " ${end} "$ARCHINSTALL_rootpwd "
-printf '%b%s %b\t%s\n' ${mag} "User pwd:           " ${end} "$ARCHINSTALL_userpwd "
-printf '%b%s %b\t%s\n' ${mag} "CPU:                " ${end} "$ARCHINSTALL_cpu "
-printf '%b%s %b\t%s\n' ${mag} "Pacman packages:    " ${end} "$ARCHINSTALL_pacpackages "
-printf '%b%s %b\t%s\n' ${mag} "AUR packages:       " ${end} "$ARCHINSTALL_aurpackages "
-printf '%b%s %b\t%s\n' ${mag} "Services:           " ${end} "$ARCHINSTALL_services "
+log_result "Hostname" "$ARCHINSTALL_hostname" 
+log_result "Username" "$ARCHINSTALL_username"
+log_result "Timezone" "$ARCHINSTALL_timezone"
+log_result "Root pwd" "$ARCHINSTALL_rootpwd"
+log_result "User pwd" "$ARCHINSTALL_userpwd"
+log_result "CPU" "$ARCHINSTALL_cpu"
+log_result "Pacman packages" "$ARCHINSTALL_pacpackages"
+log_result "AUR packages" "$ARCHINSTALL_aurpackages"
+log_result "Services" "$ARCHINSTALL_services"
 
 wait_for_confirm
 
@@ -87,7 +96,7 @@ log "[PARTITION DISK]"
 fdisk -l
 read -p "\nSelect disk: " ARCHINSTALL_disk
 
-printf '%b%s %b\t%s\n' ${mag} "Disk:               " ${end} "$ARCHINSTALL_disk "
+log_result "Disk" "$ARCHINSTALL_disk" 
 
 wait_for_confirm
 
