@@ -1,25 +1,32 @@
 #!/bin/sh
 
+cyn=$'\e[1;36m'
+mag=$'\e[1;35m'
+red=$'\e[5;31m'
+grn=$'\e[1;32m'
+end=$'\e[0m'
+
 log() {
+  color="${2:-$cyn}"
   termwidth="$(tput cols)"
   padding="$(printf '%0.1s' ={1..500})"
-  printf '%*.*s %s %*.*s\n' 0 "$(((termwidth-2-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding"
+  printf '%b %*.*s %s %*.*s %b\n' ${color} 0 "$(((termwidth-6-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding" ${end}
 }
 
 verify_success () {
   if [ "$?" = 0 ]
   then
-    log "[OK]"
+    log "[OK]" ${grn}
   else
-    log "[FAILED]"
+    log "[FAILED]" ${red}
     exit 1
   fi
 }
 
-log "=="
+log ""
 log "DO NOT USE THIS"
 log "IT CAN BREAK YOUR COMPUTER"
-log "=="
+log ""
 
 printf "\n\n"
 
@@ -113,18 +120,25 @@ log "[-> ENTER CHROOT /mnt]"
 cat <<EOF > /install-part2.sh
 #!/bin/sh
 
+cyn=$'\e[1;36m'
+mag=$'\e[1;35m'
+red=$'\e[5;31m'
+grn=$'\e[1;32m'
+end=$'\e[0m'
+
 log() {
+  color="\${2:-\$cyn}"
   termwidth="\$(tput cols)"
   padding="\$(printf '%0.1s' ={1..500})"
-  printf '%*.*s %s %*.*s\n' 0 "\$(((termwidth-2-\${#1})/2))" "\$padding" "\$1" 0 "\$(((termwidth-1-\${#1})/2))" "\$padding"
+  printf '%b %*.*s %s %*.*s %b\n' \${color} 0 "\$(((termwidth-6-\${#1})/2))" "\$padding" "\$1" 0 "\$(((termwidth-1-\${#1})/2))" "\$padding" \${end}
 }
 
 verify_success () {
   if [ "\$?" = 0 ]
   then
-    log "[OK]"
+    log "[OK]" \${grn}
   else
-    log "[FAILED]"
+    log "[FAILED]" \${red}
     exit 1
   fi
 }
