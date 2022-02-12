@@ -207,6 +207,10 @@ enable_passwd () {
   sed -i 's/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 }
 
+# -----------------------------------
+# Temporarily disable password prompt
+disable_passwd
+
 log " SETUP LOCAL TIME & HW CLOCK "
 
 ln -sf /usr/share/zoneinfo/$ARCHINSTALL_timezone /etc/localtime
@@ -285,10 +289,6 @@ pacman -S --noconfirm $ARCHINSTALL_pacpackages
 
 verify_success
 
-# -----------------------------------
-# Temporarily disable password prompt
-disable_passwd
-
 log " INSTALL AUR HELPER: yay "
 
 su -c 'git clone https://aur.archlinux.org/yay /home/$ARCHINSTALL_username/git/yay' $ARCHINSTALL_username
@@ -303,10 +303,6 @@ log " INSTALL AUR PACKAGES: $ARCHINSTALL_aurpackages "
 
 su -c 'yay -S --noconfirm $ARCHINSTALL_aurpackages' $ARCHINSTALL_username
 verify_success
-
-enable_passwd
-# Re-enable password prompt
-# -----------------------------------
 
 log " SETUP CONFIGURATION "
 
@@ -324,7 +320,13 @@ done
 
 verify_success
 
-exit 0
+res=\$?
+
+enable_passwd
+# Re-enable password prompt
+# -----------------------------------
+
+exit \$res
 EOF
 
 chmod +x /install-part2.sh
