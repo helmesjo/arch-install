@@ -210,10 +210,6 @@ enable_passwd () {
   sed -i 's/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 }
 
-# -----------------------------------
-# Temporarily disable password prompt
-disable_passwd
-
 log " SETUP TIMEZONE: $ARCHINSTALL_timezone "
 
 ln -sf /usr/share/zoneinfo/$ARCHINSTALL_timezone /etc/localtime
@@ -307,6 +303,10 @@ log " INSTALL WINDOW PACKAGES: $ARCHINSTALL_pacpackages "
 pacman -S --noconfirm $ARCHINSTALL_pacpackages
 
 verify_success
+
+# -----------------------------------
+# Temporarily disable password prompt
+disable_passwd
 
 log " INSTALL AUR HELPER: yay "
 
