@@ -19,7 +19,7 @@ log_result() {
   color="${3:-$mag}"
   termwidth="$(tput cols)"
   padding="$(printf '%0.1s' .{1..500})"
-  printf '%b%s%*.*s%b%s\n' ${wht} "$1" 0 "$(( ${#1} < 26 ? 26-${#1} : 2))" "$padding" ${color} "$2"
+  printf '%b%s%*.*s%b%s%b\n' ${wht} "$1" 0 "$(( ${#1} < 26 ? 26-${#1} : 2))" "$padding" ${color} "$2" ${wht}
 }
 
 verify_success () {
