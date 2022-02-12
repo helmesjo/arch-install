@@ -25,7 +25,7 @@ log_result() {
 }
 
 function log_error {
-    log " ERROR " ${red}
+    log " INSTALLATION FAILED " ${red}
     read line file <<<$(caller)
     echo "An error occurred in line $line of file $file:" >&2
     sed "${line}q;d" "$file" >&2
@@ -220,9 +220,7 @@ enable_passwd () {
 log " SETUP TIMEZONE: $ARCHINSTALL_timezone "
 
 ln -sf /usr/share/zoneinfo/$ARCHINSTALL_timezone /etc/localtime
-
 hwclock --systohc
-
 
 log " SETUP SYSTEM LOCALE: $ARCHINSTALL_locale "
 
@@ -285,9 +283,6 @@ log " SETUP BOOTLOADER "
 pacman -S --noconfirm ${ARCHINSTALL_cpu}-ucode
 pacman -S --noconfirm grub efibootmgr dosfstools os-prober mtools
 grub-install --target=x86_64-efi --bootloader-id=grub_uefi --efi-directory=/boot --recheck
-
-log_ok
-
 grub-mkconfig -o /boot/grub/grub.cfg
 
 log_ok
@@ -320,14 +315,14 @@ log " INSTALL AUR HELPER: yay "
 su -c 'git clone https://aur.archlinux.org/yay /home/$ARCHINSTALL_username/git/yay' $ARCHINSTALL_username
 su -c 'cd /home/$ARCHINSTALL_username/git/yay && makepkg -Acs --noconfirm' $ARCHINSTALL_username
 pacman -U --noconfirm /home/$ARCHINSTALL_username/git/yay/*.pkg.tar.zst
+rm -rf /home/$ARCHINSTALL_username/git
 
 log_ok
-
-rm -rf /home/$ARCHINSTALL_username/git
 
 log " INSTALL AUR PACKAGES: $ARCHINSTALL_aurpackages "
 
 su -c 'yay -S --noconfirm $ARCHINSTALL_aurpackages' $ARCHINSTALL_username
+
 log_ok
 
 log " SETUP CONFIGURATION "
@@ -346,13 +341,11 @@ done
 
 log_ok
 
-res=\$?
-
 enable_passwd
 # Re-enable password prompt
 # -----------------------------------
 
-exit \$res
+exit 0
 EOF
 
 chmod +x /install-part2.sh
@@ -365,8 +358,6 @@ log " EXIT CHROOT "
 rm /mnt/install-part2.sh
 rm /install-part2.sh
 
-ARCHINSTALL_chrootresult="$?"
-
 log " UNMOUNT "
 
 umount -l /mnt/boot
@@ -374,13 +365,8 @@ umount -l /mnt
 
 log_ok
 
-if [ "$ARCHINSTALL_chrootresult" = 0 ]
-then
-  log " INSTALLATION SUCCESSFUL " ${grn}
+log " INSTALLATION SUCCESSFUL " ${grn}
 
-  wait_for_confirm "Press ENTER to reboot..."
-  reboot
-else
-  log " INSTALLATION FAILED " ${red}
-  exit 1
-fi
+wait_for_confirm "Press ENTER to reboot..."
+
+reboot
