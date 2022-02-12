@@ -11,7 +11,7 @@ log() {
   paddingcolor=${cyn}
   textcolor="${2:-$cyn}"
   termwidth="$(tput cols)"
-  padding="$(printf '%0.1s' ={1..500})"
+  padding="$(printf '%0.1s' -{1..500})"
   printf '%b%*.*s|%b%s%b|%*.*s%b\n' ${paddingcolor} 0 "$(((termwidth-6-${#1})/2))" "$padding" ${textcolor} "$1" ${paddingcolor} 0 "$(((termwidth-1-${#1})/2))" "$padding" ${wht}
 }
 
@@ -43,7 +43,7 @@ wait_for_confirm () {
 printf "\n%s" ""
 printf "\n%s" ""
 
-log "⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻⎻" ${cyn}
+log "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾" ${cyn}
 log "        ARCH LINUX INSTALL HELPER         " ${cyn}
 log "                                          " ${cyn}
 log "    github.com/helmesjo/arch-installer    " ${cyn}
