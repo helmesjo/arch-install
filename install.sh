@@ -66,8 +66,8 @@ log_ok
 log " OPTIONS "
 
 ARCHINSTALL_devpackages="base-devel"
-ARCHINSTALL_default_pacpackages="git kitty vim mesa xorg i3 lightdm-gtk-greeter"
-ARCHINSTALL_default_aurpackages="rlaunch"
+ARCHINSTALL_default_pacpackages="mesa xorg i3 lightdm-gtk-greeter pulseaudio-alsa noto-fonts noto-fonts-extra noto-fonts-emoji git kitty vim"
+ARCHINSTALL_default_aurpackages="rlaunch siji-git polybar"
 ARCHINSTALL_default_services="lightdm"
 ARCHINSTALL_default_timezone="Europe/Amsterdam"
 ARCHINSTALL_default_locale="sv_SE.UTF-8"
