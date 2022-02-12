@@ -122,24 +122,26 @@ wait_for_confirm
 
 (
 echo g # Create a new empty DOS partition table
+# Create partitions (EFI, swap & root)
 echo n # Add EFI partition
 echo 1 # Partition number
 echo   # First sector (accept default)
 echo +550M # 550MB for EFI
-echo t # Change type
-echo 1 # Partition number
-echo 1 # Partition type 'EFI System'
 echo n # Add swap partition
 echo 2 # Partition number
 echo   # First sector (accept default)
 echo +2G  # 2GB for swap
-echo t # Change type
-echo 2 # Partition number
-echo 19 # Partition type 'Linux swap'
 echo n # Add root partition
 echo 3 # Partition number
 echo   # First sector (accept default)
 echo   # Last sector (use remainder)
+# Change partition types
+echo t # Change type
+echo 1 # Partition number
+echo 1 # Partition type 'EFI System'
+echo t # Change type
+echo 2 # Partition number
+echo 19 # Partition type 'Linux swap'
 echo t # Change type
 echo 3 # Partition number
 echo 20 # Partition type 'Linux filesystem'
