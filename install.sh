@@ -73,14 +73,14 @@ ARCHINSTALL_proceed="n"
 
 read -p "Hostname: " ARCHINSTALL_hostname
 read -p "Username: " ARCHINSTALL_username
+read -p "$ARCHINSTALL_username pwd: " ARCHINSTALL_userpwd
+read -p "Root pwd: " ARCHINSTALL_rootpwd
 read -p "Timezone (default: $ARCHINSTALL_default_timezone): " ARCHINSTALL_timezone
 ARCHINSTALL_timezone="${ARCHINSTALL_timezone:=$ARCHINSTALL_default_timezone}"
 read -p "Locale (default: $ARCHINSTALL_default_locale): " ARCHINSTALL_locale
 ARCHINSTALL_locale="${ARCHINSTALL_locale:=$ARCHINSTALL_default_locale}"
 read -p "Keymap (default: $ARCHINSTALL_default_keymap): " ARCHINSTALL_keymap
 ARCHINSTALL_keymap="${ARCHINSTALL_keymap:=$ARCHINSTALL_default_keymap}"
-read -p "Root pwd: " ARCHINSTALL_rootpwd
-read -p "$ARCHINSTALL_username pwd: " ARCHINSTALL_userpwd
 read -p "CPU (amd or intel): " ARCHINSTALL_cpu
 
 read -p "Pacman packages (default: $ARCHINSTALL_default_pacpackages): " ARCHINSTALL_pacpackages
