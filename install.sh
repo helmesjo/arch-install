@@ -4,20 +4,22 @@ cyn=$'\e[1;36m'
 mag=$'\e[1;35m'
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
-end=$'\e[0m'
+yel=$'\e[1;93m'
+wht=$'\e[0m'
 
 log() {
-  color="${2:-$cyn}"
+  paddingcolor=${cyn}
+  textcolor="${2:-$cyn}"
   termwidth="$(tput cols)"
   padding="$(printf '%0.1s' ={1..500})"
-  printf '\n%b%*.*s %s %*.*s%b\n' ${color} 0 "$(((termwidth-6-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding" ${end}
+  printf '%b%*.*s%b%s%b%*.*s%b\n' ${paddingcolor} 0 "$(((termwidth-6-${#1})/2))" "$padding" ${textcolor} "$1" ${paddingcolor} 0 "$(((termwidth-1-${#1})/2))" "$padding" ${wht}
 }
 
 log_result() {
   color="${3:-$mag}"
   termwidth="$(tput cols)"
   padding="$(printf '%0.1s' .{1..500})"
-  printf '%b%s%*.*s%b%s\n' ${color} "$1" 0 "$(( ${#1} < 26 ? 26-${#1} : 2))" "$padding" ${end} "$2"
+  printf '%b%s%*.*s%b%s\n' ${color} "$1" 0 "$(( ${#1} < 26 ? 26-${#1} : 2))" "$padding" ${wht} "$2"
 }
 
 verify_success () {
@@ -37,8 +39,12 @@ wait_for_confirm () {
   printf "\n%s" ""
 }
 
-log "DO NOT USE THIS" ${cyn}
-log "IT CAN BREAK YOUR COMPUTER" ${cyn}
+log ""
+log "        ARCH LINUX INSTALL HELPER         "
+log "    github.com/helmesjo/arch-installer    "
+log ""
+log "    NOTE: THIS CAN BREAK YOUR COMPUTER    " ${yel}
+log ""
 
 printf "\n%s" ""
 
@@ -166,13 +172,15 @@ cyn=$'\e[1;36m'
 mag=$'\e[1;35m'
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
-end=$'\e[0m'
+yel=$'\e[1;93m'
+wht=$'\e[0m'
 
 log() {
-  color="\${2:-\$cyn}"
+  paddingcolor=\${cyn}
+  textcolor="\${2:-\$cyn}"
   termwidth="\$(tput cols)"
-  padding="\$(printf '%0.1s' -{1..500})"
-  printf '%b %*.*s %s %*.*s %b\n' \${color} 0 "\$(((termwidth-6-\${#1})/2))" "\$padding" "\$1" 0 "\$(((termwidth-1-\${#1})/2))" "\$padding" \${end}
+  padding="\$(printf '%0.1s' ={1..500})"
+  printf '%b%*.*s%b%s%b%*.*s%b\n' \${paddingcolor} 0 "\$(((termwidth-6-\${#1})/2))" "\$padding" \${textcolor} "\$1" \${paddingcolor} 0 "\$(((termwidth-1-\${#1})/2))" "\$padding" \${wht}
 }
 
 verify_success () {
