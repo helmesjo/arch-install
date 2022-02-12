@@ -329,6 +329,12 @@ log_ok
 
 log " SETUP CONFIGURATION "
 
+# Make git-credential-libsecret
+if command -v git &> /dev/null
+then
+  (cd /usr/share/git/credential/libsecret && make)
+fi
+
 localectl set-keymap $ARCHINSTALL_keymap
 
 # clone dotfiles etc.
