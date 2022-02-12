@@ -26,9 +26,10 @@ verify_success () {
   if [ "$?" = 0 ]
   then
     log " OK " ${grn}
+    return 0
   else
     log " ERROR " ${red}
-    exit 1
+    return 1
   fi
 }
 
