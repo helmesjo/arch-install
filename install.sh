@@ -46,7 +46,7 @@ printf "\n%s" ""
 log "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾" ${cyn}
 log "        ARCH LINUX INSTALL HELPER         " ${cyn}
 log "                                          " ${cyn}
-log "    github.com/helmesjo/arch-installer    " ${cyn}
+log "     github.com/helmesjo/arch-install     " ${cyn}
 log "                                          " ${cyn}
 log "    NOTE: THIS CAN BREAK YOUR COMPUTER    " ${yel}
 log "__________________________________________" ${cyn}
