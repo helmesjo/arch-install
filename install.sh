@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -eu -o pipefail
+
 cyn=$'\e[1;36m'
 mag=$'\e[1;35m'
 red=$'\e[1;31m'
@@ -22,15 +24,16 @@ log_result() {
   printf '%b%s%*.*s%b%s%b\n' ${wht} "$1" 0 "$(( ${#1} < 26 ? 26-${#1} : 2))" "$padding" ${color} "$2" ${wht}
 }
 
-verify_success () {
-  if [ "$?" = 0 ]
-  then
-    log " OK " ${grn}
-    return 0
-  else
+function log_error {
     log " ERROR " ${red}
-    return 1
-  fi
+    read line file <<<$(caller)
+    echo "An error occurred in line $line of file $file:" >&2
+    sed "${line}q;d" "$file" >&2
+}
+trap log_error ERR
+
+log_ok () {
+  log " OK " ${grn}
 }
 
 wait_for_confirm () {
@@ -58,7 +61,7 @@ log " VERIFY INTERNET "
 
 ping -c1 -W2000 archlinux.org 2>/dev/null 1>/dev/null
 
-verify_success
+log_ok
 
 log " OPTIONS "
 
@@ -143,7 +146,7 @@ echo 20 # Partition type 'Linux filesystem'
 echo w # Write changes
 ) | fdisk $ARCHINSTALL_disk
 
-verify_success
+log_ok
 
 log " MAKE FILESYSTEMS "
 
@@ -152,7 +155,7 @@ mkswap ${ARCHINSTALL_disk}2
 swapon ${ARCHINSTALL_disk}2
 mkfs.ext4 ${ARCHINSTALL_disk}3
 
-verify_success
+log_ok
 
 log " MOUNT PARTITIONS "
 
@@ -160,22 +163,24 @@ mount ${ARCHINSTALL_disk}3 /mnt
 mkdir /mnt/boot
 mount ${ARCHINSTALL_disk}1 /mnt/boot
 
-verify_success
+log_ok
 
 log " INSTALL KERNEL "
 
 pacstrap /mnt base linux linux-firmware
 
-verify_success
+log_ok
 
 log " GENERATE FILESYSTEM TABLE "
 
 genfstab -U /mnt >> /mnt/etc/fstab
 
-verify_success
+log_ok
 
 cat <<EOF > /install-part2.sh
 #!/bin/sh
+
+set -eu -o pipefail
 
 cyn=$'\e[1;36m'
 mag=$'\e[1;35m'
@@ -192,15 +197,17 @@ log() {
   printf '%b%*.*s|%b%s%b|%*.*s%b\n' \${paddingcolor} 0 "\$(((termwidth-6-\${#1})/2))" "\$padding" \${textcolor} "\$1" \${paddingcolor} 0 "\$(((termwidth-1-\${#1})/2))" "\$padding" \${wht}
 }
 
-verify_success () {
-  if [ "\$?" = 0 ]
-  then
-    log " OK " \${grn}
-  else
-    log " ERROR " \${red}
-    exit 1
-  fi
+log_ok () {
+  log " OK " \${grn}
 }
+
+function log_error {
+  log " ERROR " \${red}
+  read line file <<<\$(caller)
+  echo "An error occurred in line \$line of file \$file:" >&2
+  sed "\${line}q;d" "\$file" >&2
+}
+trap log_error ERR
 
 disable_passwd () {
   sed -i 's/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
@@ -223,7 +230,7 @@ sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 sed -i 's/#sv_SE.UTF-8 UTF-8/sv_SE.UTF-8 UTF-8/' /etc/locale.gen
 locale-gen
 
-verify_success
+log_ok
 
 echo LANG="en_US.UTF-8"                      >  /etc/locale.conf
 echo LC_NUMERIC="$ARCHINSTALL_locale"        >> /etc/locale.conf
@@ -248,7 +255,7 @@ echo "127.0.0.1    localhost" >> /etc/hosts
 echo "::1          localhost" >> /etc/hosts
 echo "127.0.1.1    $ARCHINSTALL_hostname.localdomain    $ARCHINSTALL_hostname" >> /etc/hosts
 
-verify_success
+log_ok
 
 log " SETUP USERS "
 
@@ -266,12 +273,12 @@ echo $ARCHINSTALL_userpwd
 
 usermod -aG wheel,audio,video,storage,optical $ARCHINSTALL_username
 
-verify_success
+log_ok
 
 pacman -S --noconfirm sudo
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
-verify_success
+log_ok
 
 log " SETUP BOOTLOADER "
 
@@ -279,30 +286,30 @@ pacman -S --noconfirm ${ARCHINSTALL_cpu}-ucode
 pacman -S --noconfirm grub efibootmgr dosfstools os-prober mtools
 grub-install --target=x86_64-efi --bootloader-id=grub_uefi --efi-directory=/boot --recheck
 
-verify_success
+log_ok
 
 grub-mkconfig -o /boot/grub/grub.cfg
 
-verify_success
+log_ok
 
 log " INSTALL NETWORK MANAGER "
 
 pacman -S --noconfirm networkmanager
 systemctl enable NetworkManager
 
-verify_success
+log_ok
 
 log " INSTALL DEVELOPMENT PACKAGES: $ARCHINSTALL_devpackages "
 
 pacman -S --noconfirm $ARCHINSTALL_devpackages
 
-verify_success
+log_ok
 
 log " INSTALL WINDOW PACKAGES: $ARCHINSTALL_pacpackages "
 
 pacman -S --noconfirm $ARCHINSTALL_pacpackages
 
-verify_success
+log_ok
 
 # -----------------------------------
 # Temporarily disable password prompt
@@ -314,14 +321,14 @@ su -c 'git clone https://aur.archlinux.org/yay /home/$ARCHINSTALL_username/git/y
 su -c 'cd /home/$ARCHINSTALL_username/git/yay && makepkg -Acs --noconfirm' $ARCHINSTALL_username
 pacman -U --noconfirm /home/$ARCHINSTALL_username/git/yay/*.pkg.tar.zst
 
-verify_success
+log_ok
 
 rm -rf /home/$ARCHINSTALL_username/git
 
 log " INSTALL AUR PACKAGES: $ARCHINSTALL_aurpackages "
 
 su -c 'yay -S --noconfirm $ARCHINSTALL_aurpackages' $ARCHINSTALL_username
-verify_success
+log_ok
 
 log " SETUP CONFIGURATION "
 
@@ -329,7 +336,7 @@ localectl set-keymap $ARCHINSTALL_keymap
 
 # clone dotfiles etc.
 
-verify_success
+log_ok
 
 log " ENABLE SERVICES: $ARCHINSTALL_services "
 
@@ -337,7 +344,7 @@ for service in ${ARCHINSTALL_services}; do
     systemctl enable \$service
 done
 
-verify_success
+log_ok
 
 res=\$?
 
@@ -365,7 +372,7 @@ log " UNMOUNT "
 umount -l /mnt/boot
 umount -l /mnt
 
-verify_success
+log_ok
 
 if [ "$ARCHINSTALL_chrootresult" = 0 ]
 then
