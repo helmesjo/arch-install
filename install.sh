@@ -95,6 +95,11 @@ ARCHINSTALL_aurpackages="${ARCHINSTALL_aurpackages:=$ARCHINSTALL_default_aurpack
 read -p "Auto-enable services (default: $ARCHINSTALL_default_services): " ARCHINSTALL_services
 ARCHINSTALL_services="${ARCHINSTALL_services:=$ARCHINSTALL_default_services}"
 
+ARCHINSTALL_fdisklist=$(fdisk -l 2>&1)
+
+printf '\n%b%s%b\n\n' ${yel} "$ARCHINSTALL_fdisklist" ${wht}
+read -p "Select disk: " ARCHINSTALL_disk
+
 log " VERIFY OPTIONS "
 
 log_result "Hostname" "$ARCHINSTALL_hostname" 
@@ -106,19 +111,12 @@ log_result "CPU" "$ARCHINSTALL_cpu"
 log_result "Pacman packages" "$ARCHINSTALL_pacpackages"
 log_result "AUR packages" "$ARCHINSTALL_aurpackages"
 log_result "Services" "$ARCHINSTALL_services"
+log_result "Disk" "$ARCHINSTALL_disk" ${yel}
 
 wait_for_confirm
+wait_for_confirm "Are you sure? If not, hit CTRL+C."
 
 log " PARTITION DISK "
-
-fdisk -l
-
-printf "\n%s" ""
-read -p "Select disk: " ARCHINSTALL_disk
-
-log_result "Disk" "$ARCHINSTALL_disk" 
-
-wait_for_confirm
 
 (
 echo g # Create a new empty DOS partition table
