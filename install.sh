@@ -113,6 +113,9 @@ log_result "Pacman packages" "$ARCHINSTALL_pacpackages"
 log_result "AUR packages" "$ARCHINSTALL_aurpackages"
 log_result "Services" "$ARCHINSTALL_services"
 log_result "Disk" "$ARCHINSTALL_disk" ${yel}
+log_result "  Partition 1" "${ARCHINSTALL_disk}1: 550MB  GPT" ${yel}
+log_result "  Partition 2" "${ARCHINSTALL_disk}2: 2GB    Linux swap" ${yel}
+log_result "  Partition 3" "${ARCHINSTALL_disk}3: rest   Linux filsystem" ${yel}
 
 wait_for_confirm
 wait_for_confirm "Are you sure? If not, hit CTRL+C."
