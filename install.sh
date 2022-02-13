@@ -48,7 +48,7 @@ printf "\n%s" ""
 printf "\n%s" ""
 
 log "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾" ${cyn}
-log "        ARCH LINUX INSTALL HELPER         " ${cyn}
+log "        ARCH LINUX INSTALL HELPER (EFI)   " ${cyn}
 log "                                          " ${cyn}
 log "     github.com/helmesjo/arch-install     " ${cyn}
 log "                                          " ${cyn}
@@ -355,7 +355,10 @@ su -c 'git clone $ARCHINSTALL_customsetup /home/$ARCHINSTALL_username/tmpcustoms
 
 # Skip if url invalid & nothing was cloned (eg. user typed 'skip')
 if [ -d "/home/$ARCHINSTALL_username/tmpcustomsetuprepo" ]; then
+  echo "reponame=\`basename \$(git -C /home/$ARCHINSTALL_username/tmpcustomsetuprepo remote get-url origin) .git\`"
+  git -C /home/$ARCHINSTALL_username/tmpcustomsetuprepo remote get-url origin
   reponame=\`basename \$(git -C /home/$ARCHINSTALL_username/tmpcustomsetuprepo remote get-url origin) .git\`
+  echo \$reponame
   su -c 'mv /home/$ARCHINSTALL_username/tmpcustomsetuprepo /home/$ARCHINSTALL_username/\$reponame'
   su -c 'cd /home/$ARCHINSTALL_username/\$reponame && ./setup.sh' $ARCHINSTALL_username
 fi
