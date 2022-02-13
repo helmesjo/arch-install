@@ -86,7 +86,6 @@ read -p "Locale (default: $ARCHINSTALL_default_locale): " ARCHINSTALL_locale
 ARCHINSTALL_locale="${ARCHINSTALL_locale:=$ARCHINSTALL_default_locale}"
 read -p "Keymap (default: $ARCHINSTALL_default_keymap): " ARCHINSTALL_keymap
 ARCHINSTALL_keymap="${ARCHINSTALL_keymap:=$ARCHINSTALL_default_keymap}"
-read -p "CPU (amd or intel): " ARCHINSTALL_cpu
 
 read -p "Pacman packages (default: $ARCHINSTALL_default_pacpackages): " ARCHINSTALL_pacpackages
 ARCHINSTALL_pacpackages="${ARCHINSTALL_pacpackages:=$ARCHINSTALL_default_pacpackages}"
@@ -103,8 +102,18 @@ ARCHINSTALL_customsetup="${ARCHINSTALL_customsetup:=$ARCHINSTALL_default_customs
 
 ARCHINSTALL_fdisklist=$(fdisk -l 2>&1)
 
-printf '\n%b%s%b\n\n' ${yel} "$ARCHINSTALL_fdisklist" ${wht}
-read -p "Select disk: " ARCHINSTALL_disk
+ARCHINSTALL_disk=""
+until sudo partprobe -d -s $ARCHINSTALL_disk >/dev/null 2>&1
+do
+  printf '\n%b%s%b\n\n' ${yel} "$ARCHINSTALL_fdisklist" ${wht}
+  read -p "Select disk: " ARCHINSTALL_disk
+done
+
+ARCHINSTALL_cpu=""
+while [[ "$ARCHINSTALL_cpu" != "amd" && "$ARCHINSTALL_cpu" != "intel" ]]
+do
+  read -p "CPU (amd or intel): " ARCHINSTALL_cpu
+done
 
 log " VERIFY OPTIONS "
 
@@ -113,11 +122,11 @@ log_result "Username" "$ARCHINSTALL_username"
 log_result "Timezone" "$ARCHINSTALL_timezone"
 log_result "Root pwd" "$ARCHINSTALL_rootpwd"
 log_result "User pwd" "$ARCHINSTALL_userpwd"
-log_result "CPU" "$ARCHINSTALL_cpu"
 log_result "Pacman packages" "$ARCHINSTALL_pacpackages"
 log_result "AUR packages" "$ARCHINSTALL_aurpackages"
 log_result "Services" "$ARCHINSTALL_services"
 log_result "Custom setup" "$ARCHINSTALL_customsetup (./setup.sh)"
+log_result "CPU" "$ARCHINSTALL_cpu" ${yel}
 log_result "Disk" "$ARCHINSTALL_disk" ${yel}
 log_result "  Partition 1" "${ARCHINSTALL_disk}1: 550MB  GPT" ${yel}
 log_result "  Partition 2" "${ARCHINSTALL_disk}2: 2GB    Linux swap" ${yel}
