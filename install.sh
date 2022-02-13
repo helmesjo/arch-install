@@ -120,7 +120,7 @@ wait_for_confirm "Are you sure? If not, hit CTRL+C."
 log " PARTITION DISK "
 
 (
-echo g # Create a new empty DOS partition table
+echo g # Create a new empty GPT partition table
 # Create partitions (EFI, swap & root)
 echo n # Add EFI partition
 echo 1 # Partition number
