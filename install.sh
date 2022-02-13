@@ -313,6 +313,9 @@ log_ok
 
 log " INSTALL PACMAN PACKAGES: $ARCHINSTALL_pacpackages "
 
+# Compile packages using all cores
+sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS="-j$(nproc)"/' /etc/makepkg.conf
+
 pacman -S --noconfirm $ARCHINSTALL_pacpackages
 
 log_ok
