@@ -29,6 +29,7 @@ function log_error {
     read line file <<<$(caller)
     echo "An error occurred in line $line of file $file:" >&2
     sed "${line}q;d" "$file" >&2
+    exit 1
 }
 trap log_error ERR
 
@@ -206,6 +207,7 @@ function log_error {
   read line file <<<\$(caller)
   echo "An error occurred in line \$line of file \$file:" >&2
   sed "\${line}q;d" "\$file" >&2
+  exit 1
 }
 trap log_error ERR
 
@@ -300,7 +302,7 @@ pacman -S --noconfirm $ARCHINSTALL_devpackages
 
 log_ok
 
-log " INSTALL WINDOW PACKAGES: $ARCHINSTALL_pacpackages "
+log " INSTALL PACMAN PACKAGES: $ARCHINSTALL_pacpackages "
 
 pacman -S --noconfirm $ARCHINSTALL_pacpackages
 
