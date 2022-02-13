@@ -73,6 +73,7 @@ ARCHINSTALL_default_services="lightdm"
 ARCHINSTALL_default_timezone="Europe/Amsterdam"
 ARCHINSTALL_default_locale="sv_SE.UTF-8"
 ARCHINSTALL_default_keymap="sv-latin1"
+ARCHINSTALL_default_customsetup="https://github.com/helmesjo/dotfiles"
 ARCHINSTALL_proceed="n"
 
 read -p "Hostname: " ARCHINSTALL_hostname
@@ -96,6 +97,10 @@ ARCHINSTALL_aurpackages="${ARCHINSTALL_aurpackages:=$ARCHINSTALL_default_aurpack
 read -p "Auto-enable services (default: $ARCHINSTALL_default_services): " ARCHINSTALL_services
 ARCHINSTALL_services="${ARCHINSTALL_services:=$ARCHINSTALL_default_services}"
 
+printf "%s\n" "Custom setup repo. Will clone & execute './setup.sh' as user '$ARCHINSTALL_username' (NOPASS)"
+read -p "  URL: ('none' to skip, default: $ARCHINSTALL_default_customsetup): " ARCHINSTALL_customsetup
+ARCHINSTALL_customsetup="${ARCHINSTALL_customsetup:=$ARCHINSTALL_default_customsetup}"
+
 ARCHINSTALL_fdisklist=$(fdisk -l 2>&1)
 
 printf '\n%b%s%b\n\n' ${yel} "$ARCHINSTALL_fdisklist" ${wht}
@@ -112,6 +117,7 @@ log_result "CPU" "$ARCHINSTALL_cpu"
 log_result "Pacman packages" "$ARCHINSTALL_pacpackages"
 log_result "AUR packages" "$ARCHINSTALL_aurpackages"
 log_result "Services" "$ARCHINSTALL_services"
+log_result "Custom setup" "$ARCHINSTALL_customsetup (./setup.sh)"
 log_result "Disk" "$ARCHINSTALL_disk" ${yel}
 log_result "  Partition 1" "${ARCHINSTALL_disk}1: 550MB  GPT" ${yel}
 log_result "  Partition 2" "${ARCHINSTALL_disk}2: 2GB    Linux swap" ${yel}
@@ -340,7 +346,16 @@ fi
 
 localectl set-keymap $ARCHINSTALL_keymap
 
-# clone dotfiles etc.
+# Clone custom setup repo & run expected setup.sh
+
+su -c 'git clone $ARCHINSTALL_customsetup /home/$ARCHINSTALL_username/tmpcustomsetuprepo || true' $ARCHINSTALL_username
+
+# Skip if url invalid & nothing was cloned (eg. user typed 'skip')
+if [ -d "/home/$ARCHINSTALL_username/tmpcustomsetuprepo" ]; then
+  reponame=\`basename \$(git -C /home/$ARCHINSTALL_username/tmpcustomsetuprepo remote get-url origin) .git\`
+  su -c 'mv /home/$ARCHINSTALL_username/tmpcustomsetuprepo /home/$ARCHINSTALL_username/\$reponame'
+  su -c 'cd /home/$ARCHINSTALL_username/\$reponame && ./setup.sh' $ARCHINSTALL_username
+fi
 
 log_ok
 
