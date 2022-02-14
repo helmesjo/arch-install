@@ -360,7 +360,7 @@ localectl set-keymap $ARCHINSTALL_keymap
 
 # Clone custom setup repo & run expected setup.sh
 
-su -c 'git clone $ARCHINSTALL_customsetup /home/$ARCHINSTALL_username/ || true' $ARCHINSTALL_username
+su -c '(cd /home/$ARCHINSTALL_username && git clone $ARCHINSTALL_customsetup) || true' $ARCHINSTALL_username
 reponame=(basename $ARCHINSTALL_customsetup)
 echo \$reponame
 
@@ -369,7 +369,7 @@ if [ -d "/home/$ARCHINSTALL_username/tmpcustomsetuprepo" ]; then
 
   git -C /home/$ARCHINSTALL_username/\$reponame remote get-url origin
   reponame2=\`basename \$(git -C /home/$ARCHINSTALL_username/\$reponame remote get-url origin) .git\`
-  echo \$reponame2
+  echo "\$reponame2"
   #su -c 'mv /home/$ARCHINSTALL_username/tmpcustomsetuprepo /home/$ARCHINSTALL_username/\$reponame'
   su -c 'cd /home/$ARCHINSTALL_username/\$reponame && ./setup.sh' $ARCHINSTALL_username
 
