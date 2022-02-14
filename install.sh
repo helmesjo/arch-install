@@ -395,9 +395,9 @@ EOF
 chmod +x /install-part2.sh
 cp /install-part2.sh /mnt
 
-log " ENTER CHROOT "
+log " ENTER CHROOT " ${mag}
 arch-chroot /mnt /bin/bash /install-part2.sh
-log " EXIT CHROOT "
+log " EXIT CHROOT " ${mag}
 
 rm /mnt/install-part2.sh
 rm /install-part2.sh
