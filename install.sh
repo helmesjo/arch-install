@@ -48,7 +48,7 @@ printf "\n%s" ""
 printf "\n%s" ""
 
 log "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾" ${cyn}
-log "       xARCH LINUX INSTALL HELPER (EFI)   " ${cyn}
+log "        ARCH LINUX INSTALL HELPER (EFI)   " ${cyn}
 log "                                          " ${cyn}
 log "     github.com/helmesjo/arch-install     " ${cyn}
 log "                                          " ${cyn}
@@ -323,7 +323,7 @@ log_ok
 log " INSTALL PACMAN PACKAGES: $ARCHINSTALL_pacpackages "
 
 # Compile packages using all cores
-sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS="-j$(nproc)"/' /etc/makepkg.conf
+sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS="-j\$(nproc)"/' /etc/makepkg.conf
 
 pacman -S --noconfirm $ARCHINSTALL_pacpackages
 
@@ -360,16 +360,19 @@ localectl set-keymap $ARCHINSTALL_keymap
 
 # Clone custom setup repo & run expected setup.sh
 
-su -c 'git clone $ARCHINSTALL_customsetup /home/$ARCHINSTALL_username/tmpcustomsetuprepo || true' $ARCHINSTALL_username
+su -c 'git clone $ARCHINSTALL_customsetup /home/$ARCHINSTALL_username/ || true' $ARCHINSTALL_username
+reponame=(basename $ARCHINSTALL_customsetup)
+echo \$reponame
 
 # Skip if url invalid & nothing was cloned (eg. user typed 'skip')
 if [ -d "/home/$ARCHINSTALL_username/tmpcustomsetuprepo" ]; then
-  echo "reponame=\`basename \$(git -C /home/$ARCHINSTALL_username/tmpcustomsetuprepo remote get-url origin) .git\`"
-  git -C /home/$ARCHINSTALL_username/tmpcustomsetuprepo remote get-url origin
-  reponame=\`basename \$(git -C /home/$ARCHINSTALL_username/tmpcustomsetuprepo remote get-url origin) .git\`
-  echo \$reponame
-  su -c 'mv /home/$ARCHINSTALL_username/tmpcustomsetuprepo /home/$ARCHINSTALL_username/\$reponame'
+
+  git -C /home/$ARCHINSTALL_username/\$reponame remote get-url origin
+  reponame2=\`basename \$(git -C /home/$ARCHINSTALL_username/\$reponame remote get-url origin) .git\`
+  echo \$reponame2
+  #su -c 'mv /home/$ARCHINSTALL_username/tmpcustomsetuprepo /home/$ARCHINSTALL_username/\$reponame'
   su -c 'cd /home/$ARCHINSTALL_username/\$reponame && ./setup.sh' $ARCHINSTALL_username
+
 fi
 
 log_ok
