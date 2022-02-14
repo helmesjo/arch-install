@@ -2,12 +2,12 @@
 
 set -eu -o pipefail
 
-cyn=$'\e[1;36m'
-mag=$'\e[1;35m'
-red=$'\e[1;31m'
-grn=$'\e[1;32m'
-yel=$'\e[1;93m'
-wht=$'\e[0m'
+export cyn=$'\e[1;36m'
+export mag=$'\e[1;35m'
+export red=$'\e[1;31m'
+export grn=$'\e[1;32m'
+export yel=$'\e[1;93m'
+export wht=$'\e[0m'
 
 log() {
   paddingcolor=${cyn}
@@ -29,12 +29,12 @@ log_result() {
   printf '%b%s%*.*s%b%s%b\n' ${wht} "$1" 0 "$(( ${#1} < 26 ? 26-${#1} : 2))" "$padding" ${color} "$2" ${wht}
 }
 
-function log_error {
-    log " INSTALLATION FAILED " ${red}
-    read line file <<<$(caller)
-    echo "An error occurred in line $line of file $file:" >&2
-    sed "${line}q;d" "$file" >&2
-    exit 1
+log_error() {
+  log " INSTALLATION FAILED " ${red}
+  read line file <<<$(caller)
+  echo "An error occurred in line $line of file $file:" >&2
+  sed "${line}q;d" "$file" >&2
+  exit 1
 }
 trap log_error ERR
 
@@ -71,50 +71,53 @@ log_ok
 
 log " OPTIONS "
 
-ARCHINSTALL_devpackages="base-devel"
-ARCHINSTALL_default_pacpackages="mesa xorg i3 lightdm-gtk-greeter pulseaudio-alsa noto-fonts noto-fonts-extra noto-fonts-emoji git kitty vim"
-ARCHINSTALL_default_aurpackages="rlaunch siji-git polybar"
-ARCHINSTALL_default_services="lightdm"
-ARCHINSTALL_default_timezone="Europe/Amsterdam"
-ARCHINSTALL_default_locale="sv_SE.UTF-8"
-ARCHINSTALL_default_keymap="sv-latin1"
-ARCHINSTALL_default_customsetup="https://github.com/helmesjo/dotfiles"
-ARCHINSTALL_proceed="n"
+export ARCHINSTALL_devpackages="base-devel"
+export ARCHINSTALL_default_pacpackages="mesa xorg i3 lightdm-gtk-greeter pulseaudio-alsa noto-fonts noto-fonts-extra noto-fonts-emoji git kitty vim"
+export ARCHINSTALL_default_aurpackages="rlaunch siji-git polybar"
+export ARCHINSTALL_default_services="lightdm"
+export ARCHINSTALL_default_timezone="Europe/Amsterdam"
+export ARCHINSTALL_default_locale="sv_SE.UTF-8"
+export ARCHINSTALL_default_keymap="sv-latin1"
+export ARCHINSTALL_default_customsetup="https://github.com/helmesjo/dotfiles"
 
+export ARCHINSTALL_hostname
 read -p "Hostname: " ARCHINSTALL_hostname
+export ARCHINSTALL_username
 read -p "Username: " ARCHINSTALL_username
+export ARCHINSTALL_userpwd
 read -p "$ARCHINSTALL_username pwd: " ARCHINSTALL_userpwd
+export ARCHINSTALL_rootpwd
 read -p "Root pwd: " ARCHINSTALL_rootpwd
 read -p "Timezone (default: $ARCHINSTALL_default_timezone): " ARCHINSTALL_timezone
-ARCHINSTALL_timezone="${ARCHINSTALL_timezone:=$ARCHINSTALL_default_timezone}"
+export ARCHINSTALL_timezone="${ARCHINSTALL_timezone:=$ARCHINSTALL_default_timezone}"
 read -p "Locale (default: $ARCHINSTALL_default_locale): " ARCHINSTALL_locale
-ARCHINSTALL_locale="${ARCHINSTALL_locale:=$ARCHINSTALL_default_locale}"
+export ARCHINSTALL_locale="${ARCHINSTALL_locale:=$ARCHINSTALL_default_locale}"
 read -p "Keymap (default: $ARCHINSTALL_default_keymap): " ARCHINSTALL_keymap
-ARCHINSTALL_keymap="${ARCHINSTALL_keymap:=$ARCHINSTALL_default_keymap}"
+export ARCHINSTALL_keymap="${ARCHINSTALL_keymap:=$ARCHINSTALL_default_keymap}"
 
 read -p "Pacman packages (default: $ARCHINSTALL_default_pacpackages): " ARCHINSTALL_pacpackages
-ARCHINSTALL_pacpackages="${ARCHINSTALL_pacpackages:=$ARCHINSTALL_default_pacpackages}"
+export ARCHINSTALL_pacpackages="${ARCHINSTALL_pacpackages:=$ARCHINSTALL_default_pacpackages}"
 
 read -p "AUR packages (default: $ARCHINSTALL_default_aurpackages): " ARCHINSTALL_aurpackages
-ARCHINSTALL_aurpackages="${ARCHINSTALL_aurpackages:=$ARCHINSTALL_default_aurpackages}"
+export ARCHINSTALL_aurpackages="${ARCHINSTALL_aurpackages:=$ARCHINSTALL_default_aurpackages}"
 
 read -p "Auto-enable services (default: $ARCHINSTALL_default_services): " ARCHINSTALL_services
-ARCHINSTALL_services="${ARCHINSTALL_services:=$ARCHINSTALL_default_services}"
+export ARCHINSTALL_services="${ARCHINSTALL_services:=$ARCHINSTALL_default_services}"
 
 printf "%s\n" "Custom setup repo. Will clone & execute './setup.sh' as user '$ARCHINSTALL_username' (NOPASS)"
 read -p "  URL: ('none' to skip, default: $ARCHINSTALL_default_customsetup): " ARCHINSTALL_customsetup
-ARCHINSTALL_customsetup="${ARCHINSTALL_customsetup:=$ARCHINSTALL_default_customsetup}"
+export ARCHINSTALL_customsetup="${ARCHINSTALL_customsetup:=$ARCHINSTALL_default_customsetup}"
 
 ARCHINSTALL_fdisklist=$(fdisk -l 2>&1)
 
-ARCHINSTALL_disk=""
+export ARCHINSTALL_disk=""
 until sudo partprobe -d -s $ARCHINSTALL_disk >/dev/null 2>&1
 do
   printf '\n%b%s%b\n\n' ${yel} "$ARCHINSTALL_fdisklist" ${wht}
   read -p "Select disk: " ARCHINSTALL_disk
 done
 
-ARCHINSTALL_cpu=""
+export ARCHINSTALL_cpu=""
 while [[ "$ARCHINSTALL_cpu" != "amd" && "$ARCHINSTALL_cpu" != "intel" ]]
 do
   read -p "CPU (amd or intel): " ARCHINSTALL_cpu
@@ -201,40 +204,33 @@ genfstab -U /mnt >> /mnt/etc/fstab
 
 log_ok
 
-cat <<EOF > /install-part2.sh
+cat <<"EOF" > /install-part2.sh
 #!/bin/sh
 
 set -eu -o pipefail
 
-cyn=$'\e[1;36m'
-mag=$'\e[1;35m'
-red=$'\e[1;31m'
-grn=$'\e[1;32m'
-yel=$'\e[1;93m'
-wht=$'\e[0m'
-
 log() {
-  paddingcolor=\${cyn}
-  textcolor="\${2:-\$cyn}"
-  termwidth="\$(tput cols)"
-  padding="\$(printf '%0.1s' -{1..500})"
+  paddingcolor=${cyn}
+  textcolor="${2:-$cyn}"
+  termwidth="$(tput cols)"
+  padding="$(printf '%0.1s' -{1..500})"
 
-  text=\$1
-  if [ \${#text} -gt 64 ]; then
-   text="\$(echo \$text | cut -c -64)..."
+  text=$1
+  if [ ${#text} -gt 64 ]; then
+   text="$(echo $text | cut -c -64)..."
   fi
-  printf '%b%*.*s|%b%s%b|%*.*s%b\n' \${paddingcolor} 0 "\$(((termwidth-6-\${#text})/2))" "\$padding" \${textcolor} "\$text" \${paddingcolor} 0 "\$(((termwidth-1-\${#text})/2))" "\$padding" \${wht}
+  printf '%b%*.*s|%b%s%b|%*.*s%b\n' ${paddingcolor} 0 "$(((termwidth-6-${#text})/2))" "$padding" ${textcolor} "$text" ${paddingcolor} 0 "$(((termwidth-1-${#text})/2))" "$padding" ${wht}
 }
 
 log_ok () {
-  log " OK " \${grn}
+  log " OK " ${grn}
 }
 
 function log_error {
-  log " ERROR " \${red}
-  read line file <<<\$(caller)
-  echo "An error occurred in line \$line of file \$file:" >&2
-  sed "\${line}q;d" "\$file" >&2
+  log " ERROR " ${red}
+  read line file <<<$(caller)
+  echo "An error occurred in line $line of file $file:" >&2
+  sed "${line}q;d" "$file" >&2
   exit 1
 }
 trap log_error ERR
@@ -333,7 +329,7 @@ log_ok
 log " INSTALL PACMAN PACKAGES: $ARCHINSTALL_pacpackages "
 
 # Compile packages using all cores
-sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS="-j\$(nproc)"/' /etc/makepkg.conf
+sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS="-j$(nproc)"/' /etc/makepkg.conf
 
 pacman -S --noconfirm $ARCHINSTALL_pacpackages
 
@@ -363,14 +359,14 @@ log " SETUP CONFIGURATION "
 # Clone custom setup repo & run expected setup.sh
 
 su -c '(cd /home/$ARCHINSTALL_username && git clone $ARCHINSTALL_customsetup) || true' $ARCHINSTALL_username
-reponame=\`basename $ARCHINSTALL_customsetup\`
-echo \$reponame
+reponame=`basename $ARCHINSTALL_customsetup`
+echo $reponame
 
 # Skip if url invalid & nothing was cloned (eg. user typed 'skip')
-if [ -d "/home/$ARCHINSTALL_username/\$reponame" ]; then
-  ls -la /home/$ARCHINSTALL_username/\$reponame
-  su -c '(cd /home/$ARCHINSTALL_username/\$reponame && ls -la)' $ARCHINSTALL_username
-  su -c '(cd /home/$ARCHINSTALL_username/\$reponame && ./setup.sh)' $ARCHINSTALL_username
+if [ -d "/home/$ARCHINSTALL_username/$reponame" ]; then
+  ls -la /home/$ARCHINSTALL_username/$reponame
+  su -c '(cd /home/$ARCHINSTALL_username/$reponame && ls -la)' $ARCHINSTALL_username
+  su -c '(cd /home/$ARCHINSTALL_username/$reponame && ./setup.sh)' $ARCHINSTALL_username
 fi
 
 # Make git-credential-libsecret
@@ -386,7 +382,7 @@ log_ok
 log " ENABLE SERVICES: $ARCHINSTALL_services "
 
 for service in ${ARCHINSTALL_services}; do
-    systemctl enable \$service
+    systemctl enable $service
 done
 
 log_ok
