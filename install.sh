@@ -14,7 +14,12 @@ log() {
   textcolor="${2:-$cyn}"
   termwidth="$(tput cols)"
   padding="$(printf '%0.1s' -{1..500})"
-  printf '%b%*.*s|%b%s%b|%*.*s%b\n' ${paddingcolor} 0 "$(((termwidth-6-${#1})/2))" "$padding" ${textcolor} "$1" ${paddingcolor} 0 "$(((termwidth-1-${#1})/2))" "$padding" ${wht}
+
+  text=$1
+  if [ ${#text} -gt 64 ]; then
+   text="$(echo $text | cut -c -64)..."
+  fi
+  printf '%b%*.*s|%b%s%b|%*.*s%b\n' ${paddingcolor} 0 "$(((termwidth-6-${#text})/2))" "$padding" ${textcolor} "$text" ${paddingcolor} 0 "$(((termwidth-1-${#text})/2))" "$padding" ${wht}
 }
 
 log_result() {
@@ -213,7 +218,12 @@ log() {
   textcolor="\${2:-\$cyn}"
   termwidth="\$(tput cols)"
   padding="\$(printf '%0.1s' -{1..500})"
-  printf '%b%*.*s|%b%s%b|%*.*s%b\n' \${paddingcolor} 0 "\$(((termwidth-6-\${#1})/2))" "\$padding" \${textcolor} "\$1" \${paddingcolor} 0 "\$(((termwidth-1-\${#1})/2))" "\$padding" \${wht}
+
+  text=\$1
+  if [ \${#text} -gt 64 ]; then
+   text="\$(echo \$text | cut -c -64)..."
+  fi
+  printf '%b%*.*s|%b%s%b|%*.*s%b\n' \${paddingcolor} 0 "\$(((termwidth-6-\${#text})/2))" "\$padding" \${textcolor} "\$text" \${paddingcolor} 0 "\$(((termwidth-1-\${#text})/2))" "\$padding" \${wht}
 }
 
 log_ok () {
