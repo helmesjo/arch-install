@@ -242,13 +242,13 @@ log " SETUP TIMEZONE: $ARCHINSTALL_timezone "
 ln -sf /usr/share/zoneinfo/$ARCHINSTALL_timezone /etc/localtime
 hwclock --systohc
 
+log_ok
+
 log " SETUP SYSTEM LOCALE: $ARCHINSTALL_locale "
 
 sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 sed -i 's/#sv_SE.UTF-8 UTF-8/sv_SE.UTF-8 UTF-8/' /etc/locale.gen
 locale-gen
-
-log_ok
 
 echo LANG="en_US.UTF-8"                      >  /etc/locale.conf
 echo LC_NUMERIC="$ARCHINSTALL_locale"        >> /etc/locale.conf
@@ -265,6 +265,8 @@ echo LC_IDENTIFICATION="$ARCHINSTALL_locale" >> /etc/locale.conf
 #echo LANGUAGE="$ARCHINSTALL_locale""         >> /etc/locale.conf
 #echo LC_CTYPE="$ARCHINSTALL_locale""         >> /etc/locale.conf
 #echo LC_MESSAGES="$ARCHINSTALL_locale""      >> /etc/locale.conf
+
+log_ok
 
 log " SETUP HOSTS "
 
@@ -290,8 +292,6 @@ echo $ARCHINSTALL_userpwd
 ) | passwd $ARCHINSTALL_username
 
 usermod -aG wheel,audio,video,storage,optical $ARCHINSTALL_username
-
-log_ok
 
 pacman -S --noconfirm sudo
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
