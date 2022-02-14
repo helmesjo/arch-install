@@ -358,15 +358,16 @@ log " SETUP CONFIGURATION "
 
 # Clone custom setup repo & run expected setup.sh
 
-su -c '(cd /home/$ARCHINSTALL_username && git clone $ARCHINSTALL_customsetup) || true' $ARCHINSTALL_username
-reponame=`basename $ARCHINSTALL_customsetup`
-echo $reponame
+reponame=$(basename $ARCHINSTALL_customsetup)
+repodir="/home/$ARCHINSTALL_username/$reponame"
+su -c "cd /home/$ARCHINSTALL_username && git clone $ARCHINSTALL_customsetup $repodir || true" $ARCHINSTALL_username
 
-# Skip if url invalid & nothing was cloned (eg. user typed 'skip')
-if [ -d "/home/$ARCHINSTALL_username/$reponame" ]; then
-  ls -la /home/$ARCHINSTALL_username/$reponame
-  su -c '(cd /home/$ARCHINSTALL_username/$reponame && ls -la)' $ARCHINSTALL_username
-  su -c '(cd /home/$ARCHINSTALL_username/$reponame && ./setup.sh)' $ARCHINSTALL_username
+# Skip if url invalid & nothing was cloned (eg. user typed 'skip'), or setup.sh not found.
+if [ -f $repodir/setup.sh ]; then
+  log " RUNNING $repodir/setup.sh... " ${mag}
+  su -c "cd $repodir && ./setup.sh" $ARCHINSTALL_username
+else
+  log " SKIPPING CUSTOM SETUP " ${yel}
 fi
 
 # Make git-credential-libsecret
