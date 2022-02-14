@@ -48,7 +48,7 @@ printf "\n%s" ""
 printf "\n%s" ""
 
 log "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾" ${cyn}
-log "        ARCH LINUX INSTALL HELPER (EFI)   " ${cyn}
+log "       xARCH LINUX INSTALL HELPER (EFI)   " ${cyn}
 log "                                          " ${cyn}
 log "     github.com/helmesjo/arch-install     " ${cyn}
 log "                                          " ${cyn}
