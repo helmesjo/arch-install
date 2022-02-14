@@ -360,14 +360,6 @@ log_ok
 
 log " SETUP CONFIGURATION "
 
-# Make git-credential-libsecret
-if command -v git &> /dev/null
-then
-  (cd /usr/share/git/credential/libsecret && make)
-fi
-
-localectl set-keymap $ARCHINSTALL_keymap
-
 # Clone custom setup repo & run expected setup.sh
 
 su -c '(cd /home/$ARCHINSTALL_username && git clone $ARCHINSTALL_customsetup) || true' $ARCHINSTALL_username
@@ -376,10 +368,18 @@ echo \$reponame
 
 # Skip if url invalid & nothing was cloned (eg. user typed 'skip')
 if [ -d "/home/$ARCHINSTALL_username/\$reponame" ]; then
-
+  ls -la /home/$ARCHINSTALL_username/\$reponame
+  su -c '(cd /home/$ARCHINSTALL_username/\$reponame && ls -la)' $ARCHINSTALL_username
   su -c '(cd /home/$ARCHINSTALL_username/\$reponame && ./setup.sh)' $ARCHINSTALL_username
-
 fi
+
+# Make git-credential-libsecret
+if command -v git &> /dev/null
+then
+  (cd /usr/share/git/credential/libsecret && make)
+fi
+
+localectl set-keymap $ARCHINSTALL_keymap
 
 log_ok
 
