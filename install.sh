@@ -1,5 +1,4 @@
 #!/bin/sh
-
 set -eu -o pipefail
 
 export cyn=$'\e[1;36m'
@@ -71,10 +70,9 @@ log_ok
 
 log " OPTIONS "
 
-export ARCHINSTALL_devpackages="base-devel"
-export ARCHINSTALL_default_pacpackages="mesa xorg i3 lightdm-gtk-greeter pulseaudio-alsa noto-fonts noto-fonts-extra noto-fonts-emoji git kitty vim"
-export ARCHINSTALL_default_aurpackages="rlaunch siji-git polybar"
-export ARCHINSTALL_default_services="lightdm"
+export ARCHINSTALL_devpackages="base-devel git"
+export ARCHINSTALL_default_pacpackages=""
+export ARCHINSTALL_default_aurpackages=""
 export ARCHINSTALL_default_timezone="Europe/Amsterdam"
 export ARCHINSTALL_default_locale="sv_SE.UTF-8"
 export ARCHINSTALL_default_keymap="sv-latin1"
@@ -100,9 +98,6 @@ export ARCHINSTALL_pacpackages="${ARCHINSTALL_pacpackages:=$ARCHINSTALL_default_
 
 read -p "AUR packages (default: $ARCHINSTALL_default_aurpackages): " ARCHINSTALL_aurpackages
 export ARCHINSTALL_aurpackages="${ARCHINSTALL_aurpackages:=$ARCHINSTALL_default_aurpackages}"
-
-read -p "Auto-enable services (default: $ARCHINSTALL_default_services): " ARCHINSTALL_services
-export ARCHINSTALL_services="${ARCHINSTALL_services:=$ARCHINSTALL_default_services}"
 
 printf "%s\n" "Custom setup repo. Will clone & execute './setup.sh' as user '$ARCHINSTALL_username' (NOPASS)"
 read -p "  URL: ('none' to skip, default: $ARCHINSTALL_default_customsetup): " ARCHINSTALL_customsetup
@@ -132,7 +127,6 @@ log_result "Root pwd" "$ARCHINSTALL_rootpwd"
 log_result "User pwd" "$ARCHINSTALL_userpwd"
 log_result "Pacman packages" "$ARCHINSTALL_pacpackages"
 log_result "AUR packages" "$ARCHINSTALL_aurpackages"
-log_result "Services" "$ARCHINSTALL_services"
 log_result "Custom setup" "$ARCHINSTALL_customsetup (./setup.sh)"
 log_result "CPU" "$ARCHINSTALL_cpu" ${yel}
 log_result "Disk" "$ARCHINSTALL_disk" ${yel}
@@ -206,7 +200,6 @@ log_ok
 
 cat <<"EOF" > /install-part2.sh
 #!/bin/sh
-
 set -eu -o pipefail
 
 log() {
@@ -326,14 +319,16 @@ pacman -S --noconfirm $ARCHINSTALL_devpackages
 
 log_ok
 
-log " INSTALL PACMAN PACKAGES: $ARCHINSTALL_pacpackages "
+if test -n "${ARCHINSTALL_pacpackages-}"; then
+  log " INSTALL PACMAN PACKAGES: $ARCHINSTALL_pacpackages "
 
-# Compile packages using all cores
-sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS="-j$(nproc)"/' /etc/makepkg.conf
+  # Compile packages using all cores
+  sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS="-j$(nproc)"/' /etc/makepkg.conf
 
-pacman -S --noconfirm $ARCHINSTALL_pacpackages
+  pacman -S --noconfirm $ARCHINSTALL_pacpackages
 
-log_ok
+  log_ok
+fi
 
 # -----------------------------------
 # Temporarily disable password prompt
@@ -348,13 +343,15 @@ rm -rf /home/$ARCHINSTALL_username/git
 
 log_ok
 
-log " INSTALL AUR PACKAGES: $ARCHINSTALL_aurpackages "
+if test -n "${ARCHINSTALL_aurpackages-}"; then
+  log " INSTALL AUR PACKAGES: $ARCHINSTALL_aurpackages "
 
-su -c 'yay -S --noconfirm $ARCHINSTALL_aurpackages' $ARCHINSTALL_username
+  su -c 'yay -S --noconfirm $ARCHINSTALL_aurpackages' $ARCHINSTALL_username
 
-log_ok
+  log_ok
+fi
 
-log " SETUP CONFIGURATION "
+log " CUSTOM SETUP "
 
 # Clone custom setup repo & run expected setup.sh
 
@@ -367,24 +364,10 @@ if [ -f $repodir/setup.sh ]; then
   log " RUNNING $repodir/setup.sh... " ${mag}
   su -c "cd $repodir && ./setup.sh" $ARCHINSTALL_username
 else
-  log " SKIPPING CUSTOM SETUP " ${yel}
-fi
-
-# Make git-credential-libsecret
-if command -v git &> /dev/null
-then
-  (cd /usr/share/git/credential/libsecret && make)
+  log " SKIPPING CUSTOM SETUP: '$repodir/setup.sh' not found " ${yel}
 fi
 
 localectl set-keymap $ARCHINSTALL_keymap
-
-log_ok
-
-log " ENABLE SERVICES: $ARCHINSTALL_services "
-
-for service in ${ARCHINSTALL_services}; do
-    systemctl enable $service
-done
 
 log_ok
 
