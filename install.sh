@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -eu -o pipefail
 
 export cyn=$'\e[1;36m'
@@ -7,19 +7,34 @@ export red=$'\e[1;31m'
 export grn=$'\e[1;32m'
 export yel=$'\e[1;93m'
 export wht=$'\e[0m'
+export ARCHINSTALL_duration=0
+export ARCHINSTALL_showduration=false
 
 log() {
   paddingcolor=${cyn}
   textcolor="${2:-$cyn}"
   termwidth="$(tput cols)"
-  padding="$(printf '%0.1s' -{1..500})"
 
+  if [ "$ARCHINSTALL_showduration" = true ]; then
+    ARCHINSTALL_duration=$(($ARCHINSTALL_duration+$SECONDS))
+    duration=" $(date +%T -d "1/1 + $ARCHINSTALL_duration sec")"
+    if [ $SECONDS -gt 0 ]; then
+      SECONDS=0
+    fi
+  else
+    duration=""
+  fi
   text=$1
   if [ ${#text} -gt 64 ]; then
    text="$(echo $text | cut -c -64)..."
   fi
-  printf '%b%*.*s|%b%s%b|%*.*s%b\n' ${paddingcolor} 0 "$(((termwidth-6-${#text})/2))" "$padding" ${textcolor} "$text" ${paddingcolor} 0 "$(((termwidth-1-${#text})/2))" "$padding" ${wht}
+
+  padding="$(printf '%0.1s' -{1..500})"
+  paddingformat_lhs="$((((termwidth-${#text})/2-1)))"
+  paddingformat_rhs="$((((termwidth-${#text}+1)/2-1)-${#duration}-1))"
+  printf '%b%*.*s|%b%s%b|%*.*s|%b%s\n' ${paddingcolor} 0 $paddingformat_lhs "$padding" ${textcolor} "$text" ${paddingcolor} 0 "$paddingformat_rhs" "$padding" ${wht} "$duration"
 }
+export -f log
 
 log_result() {
   color="${3:-$mag}"
@@ -27,6 +42,7 @@ log_result() {
   padding="$(printf '%0.1s' .{1..500})"
   printf '%b%s%*.*s%b%s%b\n' ${wht} "$1" 0 "$(( ${#1} < 26 ? 26-${#1} : 2))" "$padding" ${color} "$2" ${wht}
 }
+export -f log_result
 
 log_error() {
   log " INSTALLATION FAILED " ${red}
@@ -36,10 +52,12 @@ log_error() {
   exit 1
 }
 trap log_error ERR
+export -f log_error
 
 log_ok () {
   log " OK " ${grn}
 }
+export -f log_ok
 
 wait_for_confirm () {
   prompt="${1:-"Press ENTER to continue..."}"
@@ -47,6 +65,7 @@ wait_for_confirm () {
   read -p "$prompt"
   printf "\n%s" ""
 }
+export -f wait_for_confirm
 
 printf "\n%s" ""
 printf "\n%s" ""
@@ -135,7 +154,12 @@ log_result "  Partition 2" "${ARCHINSTALL_disk}2: 2GB    Linux swap" ${yel}
 log_result "  Partition 3" "${ARCHINSTALL_disk}3: rest   Linux filsystem" ${yel}
 
 wait_for_confirm
-wait_for_confirm "Are you sure? If not, hit CTRL+C."
+wait_for_confirm "Start installation? If not, hit CTRL+C."
+
+# Reset timer
+SECONDS=0
+ARCHINSTALL_duration=0
+ARCHINSTALL_showduration=true
 
 log " PARTITION DISK "
 
@@ -199,33 +223,8 @@ genfstab -U /mnt >> /mnt/etc/fstab
 log_ok
 
 cat <<"EOF" > /install-part2.sh
-#!/bin/sh
+#!/bin/bash
 set -eu -o pipefail
-
-log() {
-  paddingcolor=${cyn}
-  textcolor="${2:-$cyn}"
-  termwidth="$(tput cols)"
-  padding="$(printf '%0.1s' -{1..500})"
-
-  text=$1
-  if [ ${#text} -gt 64 ]; then
-   text="$(echo $text | cut -c -64)..."
-  fi
-  printf '%b%*.*s|%b%s%b|%*.*s%b\n' ${paddingcolor} 0 "$(((termwidth-6-${#text})/2))" "$padding" ${textcolor} "$text" ${paddingcolor} 0 "$(((termwidth-1-${#text})/2))" "$padding" ${wht}
-}
-
-log_ok () {
-  log " OK " ${grn}
-}
-
-function log_error {
-  log " ERROR " ${red}
-  read line file <<<$(caller)
-  echo "An error occurred in line $line of file $file:" >&2
-  sed "${line}q;d" "$file" >&2
-  exit 1
-}
 trap log_error ERR
 
 disable_passwd () {
