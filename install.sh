@@ -321,9 +321,6 @@ log_ok
 if test -n "${ARCHINSTALL_pacpackages-}"; then
   log " INSTALL PACMAN PACKAGES: $ARCHINSTALL_pacpackages "
 
-  # Compile packages using all cores
-  sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS="-j$(nproc)"/' /etc/makepkg.conf
-
   pacman -S --noconfirm $ARCHINSTALL_pacpackages
 
   log_ok
@@ -334,6 +331,9 @@ fi
 disable_passwd
 
 log " INSTALL AUR HELPER: yay "
+
+# Compile packages using all cores
+sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS="-j$(nproc)"/' /etc/makepkg.conf
 
 su -c 'git clone https://aur.archlinux.org/yay /home/$ARCHINSTALL_username/git/yay' $ARCHINSTALL_username
 su -c 'cd /home/$ARCHINSTALL_username/git/yay && makepkg -Acs --noconfirm' $ARCHINSTALL_username
