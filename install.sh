@@ -197,12 +197,13 @@ ARCHINSTALL_showduration=true
 
 log " PARTITION DISK "
 
-# Find and erase existing partitions (if any)
+# Find and erase any existing partition(s) & disk label
 ARCHINSTALL_lsblkpartitioncolumn=$(lsblk $ARCHINSTALL_disk | head -n1 | sed 's/\s\+/\n/g' | grep -nx 'MAJ:MIN' | cut -d':' -f1)
 ARCHINSTALL_existingdiskpartitions=$(lsblk $ARCHINSTALL_disk | tail -n +3 | awk -v C=$ARCHINSTALL_lsblkpartitioncolumn '{print $C}' | cut -d':' -f2)
 for partnr in ${ARCHINSTALL_existingdiskpartitions[@]}; do
   parted $ARCHINSTALL_disk rm $partnr
 done
+wipefs --all --force $ARCHINSTALL_disk
 
 parted $ARCHINSTALL_disk mklabel gpt
 parted $ARCHINSTALL_disk mkpart "\"EFI System\"" fat32 1MiB ${ARCHINSTALL_bootsizeMB}MiB            # EFI
