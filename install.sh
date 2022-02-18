@@ -95,7 +95,6 @@ log " OPTIONS "
 
 export ARCHINSTALL_devpackages="base-devel git"
 export ARCHINSTALL_default_pacpackages=""
-export ARCHINSTALL_default_aurpackages=""
 export ARCHINSTALL_default_timezone="Europe/Amsterdam"
 export ARCHINSTALL_default_locale="sv_SE.UTF-8"
 export ARCHINSTALL_default_keymap="sv-latin1"
@@ -135,11 +134,7 @@ printf "%b%s%b" ${cyn} "Pacman packages (default: $ARCHINSTALL_default_pacpackag
 read ARCHINSTALL_pacpackages
 export ARCHINSTALL_pacpackages="${ARCHINSTALL_pacpackages:=$ARCHINSTALL_default_pacpackages}"
 
-printf "%b%s%b" ${cyn} "AUR packages (default: $ARCHINSTALL_default_aurpackages): " ${wht}
-read ARCHINSTALL_aurpackages
-export ARCHINSTALL_aurpackages="${ARCHINSTALL_aurpackages:=$ARCHINSTALL_default_aurpackages}"
-
-printf "\n%b%s\n  %s%b" ${cyn} "Custom setup repo. Will clone & execute './setup.sh' as user '$ARCHINSTALL_username' (NOPASS)" "  URL: ('none' to skip, default: $ARCHINSTALL_default_customsetup): " ${wht}
+printf "%b%s\n  %s%b" ${cyn} "Custom setup repo. Will clone & execute './setup.sh' as user '$ARCHINSTALL_username' (NOPASS)" "URL: ('none' to skip, default: $ARCHINSTALL_default_customsetup): " ${wht}
 read ARCHINSTALL_customsetup
 export ARCHINSTALL_customsetup="${ARCHINSTALL_customsetup:=$ARCHINSTALL_default_customsetup}"
 
@@ -161,7 +156,7 @@ do
   do
     diskname=$(echo "$disk" | awk '{print $2}' | sed 's/://')
     disk_info=$(fdisk -l $diskname | sed '/Disk \/dev/d' | sed 's/^/  /')
-    printf '\n%b%s\n%b%s%b\n' ${yel} "$disk" ${dyel} "$disk_info" ${wht}
+    printf '%b%s\n%b%s%b\n' ${yel} "$disk" ${dyel} "$disk_info" ${wht}
   done <<< "$ARCHINSTALL_fdisklist"
 
   printf "%b%s%b" ${cyn} "Select disk: " ${wht}
@@ -183,7 +178,6 @@ log_result "Timezone" "$ARCHINSTALL_timezone"
 log_result "Locale" "$ARCHINSTALL_locale"
 log_result "Keymap" "$ARCHINSTALL_keymap"
 log_result "Pacman packages" "$ARCHINSTALL_pacpackages"
-log_result "AUR packages" "$ARCHINSTALL_aurpackages"
 log_result "Custom setup" "$ARCHINSTALL_customsetup (./setup.sh)"
 log_result "CPU" "$ARCHINSTALL_cpu" ${yel}
 log_result "Disk" "$ARCHINSTALL_disk" ${yel}
@@ -340,6 +334,9 @@ log_ok
 
 log " INSTALL DEVELOPMENT PACKAGES: $ARCHINSTALL_devpackages "
 
+# Compile packages using all cores
+sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS="-j$(nproc)"/' /etc/makepkg.conf
+
 pacman -S --noconfirm $ARCHINSTALL_devpackages
 
 log_ok
@@ -355,26 +352,6 @@ fi
 # -----------------------------------
 # Temporarily disable password prompt
 disable_passwd
-
-log " INSTALL AUR HELPER: yay "
-
-# Compile packages using all cores
-sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS="-j$(nproc)"/' /etc/makepkg.conf
-
-su -c 'git clone https://aur.archlinux.org/yay /home/$ARCHINSTALL_username/git/yay' $ARCHINSTALL_username
-su -c 'cd /home/$ARCHINSTALL_username/git/yay && makepkg -Acs --noconfirm' $ARCHINSTALL_username
-pacman -U --noconfirm /home/$ARCHINSTALL_username/git/yay/*.pkg.tar.zst
-rm -rf /home/$ARCHINSTALL_username/git
-
-log_ok
-
-if test -n "${ARCHINSTALL_aurpackages-}"; then
-  log " INSTALL AUR PACKAGES: $ARCHINSTALL_aurpackages "
-
-  su -c 'yay -S --noconfirm $ARCHINSTALL_aurpackages' $ARCHINSTALL_username
-
-  log_ok
-fi
 
 log " CUSTOM SETUP "
 
