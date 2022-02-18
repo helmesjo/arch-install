@@ -60,9 +60,12 @@ log_ok () {
 export -f log_ok
 
 wait_for_confirm () {
-  prompt="${1:-"Press ENTER to continue..."}"
+  prompt="${1:-"Continue"}"
   printf "\n%s" ""
-  read -p "$prompt"
+  read -p "$prompt [y/n]: " ARCHINSTALL_reply
+  if [ "$ARCHINSTALL_reply" != "y" ]; then
+    exit 1
+  fi
   printf "\n%s" ""
 }
 export -f wait_for_confirm
@@ -154,7 +157,7 @@ log_result "  Partition 2" "${ARCHINSTALL_disk}2: 2GB    Linux swap" ${yel}
 log_result "  Partition 3" "${ARCHINSTALL_disk}3: rest   Linux filsystem" ${yel}
 
 wait_for_confirm
-wait_for_confirm "Start installation? If not, hit CTRL+C."
+wait_for_confirm "Start installation"
 
 # Reset timer
 SECONDS=0
@@ -396,6 +399,6 @@ log_ok
 
 log " INSTALLATION SUCCESSFUL " ${grn}
 
-wait_for_confirm "Press ENTER to reboot..."
+wait_for_confirm "Reboot"
 
 reboot
