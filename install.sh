@@ -12,35 +12,34 @@ export ARCHINSTALL_duration=0
 export ARCHINSTALL_showduration=false
 
 log() {
-  paddingcolor=${cyn}
-  textcolor="${2:-$cyn}"
-  termwidth="$(tput cols)"
+  local paddingcolor=${cyn}
+  local textcolor="${2:-$cyn}"
+  local termwidth="$(tput cols)"
 
+  local duration=""
   if [ "$ARCHINSTALL_showduration" = true ]; then
     ARCHINSTALL_duration=$(($ARCHINSTALL_duration+$SECONDS))
-    duration=" $(date +%T -d "1/1 + $ARCHINSTALL_duration sec")"
+    local duration=" $(date +%T -d "1/1 + $ARCHINSTALL_duration sec")"
     if [ $SECONDS -gt 0 ]; then
       SECONDS=0
     fi
-  else
-    duration=""
   fi
-  text=$1
+  local text=$1
   if [ ${#text} -gt 64 ]; then
    text="$(echo $text | cut -c -64)..."
   fi
 
-  padding="$(printf '%0.1s' -{1..500})"
-  paddingformat_lhs="$((((termwidth-${#text})/2-1)))"
-  paddingformat_rhs="$((((termwidth-${#text}+1)/2-1)-${#duration}-1))"
+  local padding="$(printf '%0.1s' -{1..500})"
+  local paddingformat_lhs="$((((termwidth-${#text})/2-1)))"
+  local paddingformat_rhs="$((((termwidth-${#text}+1)/2-1)-${#duration}-1))"
   printf '%b%*.*s|%b%s%b|%*.*s|%b%s\n' ${paddingcolor} 0 $paddingformat_lhs "$padding" ${textcolor} "$text" ${paddingcolor} 0 "$paddingformat_rhs" "$padding" ${wht} "$duration"
 }
 export -f log
 
 log_result() {
-  color="${3:-$mag}"
-  termwidth="$(tput cols)"
-  padding="$(printf '%0.1s' .{1..500})"
+  local color="${3:-$mag}"
+  local termwidth="$(tput cols)"
+  local padding="$(printf '%0.1s' .{1..500})"
   printf '%b%s%*.*s%b%s%b\n' ${wht} "$1" 0 "$(( ${#1} < 26 ? 26-${#1} : 2))" "$padding" ${color} "$2" ${wht}
 }
 export -f log_result
@@ -61,18 +60,38 @@ log_ok () {
 export -f log_ok
 
 wait_for_confirm () {
-  prompt="${1:-"Continue?"}"
+  local prompt="${1:-"Continue?"}"
   printf "\n%b%s%b" ${cyn} "$prompt [y/n]: " ${wht}
   read -p "" ARCHINSTALL_reply
   if [ "$ARCHINSTALL_reply" != "y" ]; then
     exit 1
   fi
-  printf "\n%s" ""
+  echo ""
 }
 export -f wait_for_confirm
 
-printf "\n%s" ""
-printf "\n%s" ""
+read_input() {
+  local prompt="${1:-""}"
+  local default="${2:-}"
+  local matcher=${3:-.*}
+
+  if [ -n "$default" ]; then
+    local defaultprompt=" (default: $default)"
+  else
+    local defaultprompt=""
+  fi
+  
+  local ARCHINSTALL_reply
+  while [ -z ${ARCHINSTALL_reply+x} ] || ! [[ "$ARCHINSTALL_reply" =~ $matcher ]]; do
+    printf "%b%s%b%s" ${cyn} "$prompt" ${wht} "$defaultprompt: "
+    read ARCHINSTALL_reply
+  done
+  
+  retVal=${ARCHINSTALL_reply:=$default}
+}
+
+echo ""
+echo ""
 
 log "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾" ${cyn}
 log "      ARCH LINUX INSTALL HELPER (EFI)     " ${cyn}
@@ -104,51 +123,37 @@ export ARCHINSTALL_swapsizeMB="4000"
 
 echo ""
 
-export ARCHINSTALL_hostname
-printf "%b%s%b" ${cyn} "Hostname: " ${wht}
-read ARCHINSTALL_hostname
+read_input "Hostname"
+export ARCHINSTALL_hostname="$retVal"
 
-export ARCHINSTALL_username
-printf "%b%s%b" ${cyn} "Username: " ${wht}
-read ARCHINSTALL_username
+read_input "Username"
+export ARCHINSTALL_username="$retVal"
 
-export ARCHINSTALL_userpwd
-printf "%b%s%b" ${cyn} "$ARCHINSTALL_username pwd: " ${wht}
-read ARCHINSTALL_userpwd
+read_input "$ARCHINSTALL_username pwd"
+export ARCHINSTALL_userpwd="$retVal"
 
-export ARCHINSTALL_rootpwd
-printf "%b%s%b" ${cyn} "Root pwd: " ${wht}
-read ARCHINSTALL_rootpwd
+read_input "Root pwd"
+export ARCHINSTALL_rootpwd="$retVal"
 
-printf "%b%s%b" ${cyn} "Timezone (default: $ARCHINSTALL_default_timezone): " ${wht}
-read ARCHINSTALL_timezone
-export ARCHINSTALL_timezone="${ARCHINSTALL_timezone:=$ARCHINSTALL_default_timezone}"
+read_input "Timezone" "$ARCHINSTALL_default_timezone"
+export ARCHINSTALL_timezone="$retVal"
 
-printf "%b%s%b" ${cyn} "Locale (default: $ARCHINSTALL_default_locale): " ${wht}
-read ARCHINSTALL_locale
-export ARCHINSTALL_locale="${ARCHINSTALL_locale:=$ARCHINSTALL_default_locale}"
+read_input "Locale" "$ARCHINSTALL_default_locale"
+export ARCHINSTALL_locale="$retVal"
 
-printf "%b%s%b" ${cyn} "Keymap (default: $ARCHINSTALL_default_keymap): " ${wht}
-read ARCHINSTALL_keymap
-export ARCHINSTALL_keymap="${ARCHINSTALL_keymap:=$ARCHINSTALL_default_keymap}"
+read_input "Keymap" "$ARCHINSTALL_default_keymap"
+export ARCHINSTALL_keymap="$retVal"
 
-printf "%b%s%b" ${cyn} "Pacman packages (default: $ARCHINSTALL_default_pacpackages): " ${wht}
-read ARCHINSTALL_pacpackages
-export ARCHINSTALL_pacpackages="${ARCHINSTALL_pacpackages:=$ARCHINSTALL_default_pacpackages}"
+read_input "Pacman packages" "$ARCHINSTALL_default_pacpackages"
+export ARCHINSTALL_pacpackages="$retVal"
 
-printf "%b%s\n  %s%b" ${cyn} "Custom setup repo. Will clone & execute './setup.sh' as user '$ARCHINSTALL_username' (NOPASS)" "URL: ('none' to skip, default: $ARCHINSTALL_default_customsetup): " ${wht}
-read ARCHINSTALL_customsetup
-export ARCHINSTALL_customsetup="${ARCHINSTALL_customsetup:=$ARCHINSTALL_default_customsetup}"
+read_input "Custom setup repo" "$ARCHINSTALL_default_customsetup"
+export ARCHINSTALL_customsetup="$retVal"
 
-export ARCHINSTALL_cpu=""
-while [[ "$ARCHINSTALL_cpu" != "amd" && "$ARCHINSTALL_cpu" != "intel" ]]
-do
-  printf "%b%s%b" ${cyn} "CPU (amd or intel): " ${wht}
-  read ARCHINSTALL_cpu
-done
+read_input "CPU [amd|intel]" "" "[amd|intel]"
+export ARCHINSTALL_cpu="$retVal"
 
 export ARCHINSTALL_disk=""
-
 # Filter out & print disks of interest (ignore loop devices)
 ARCHINSTALL_fdisklist=$(fdisk -l | grep 'Disk /dev' | sed '/loop/d')
 until partprobe -d -s $ARCHINSTALL_disk >/dev/null 2>&1
@@ -161,8 +166,8 @@ do
     printf '%b%s\n%b%s%b\n' ${yel} "$disk" ${dyel} "$disk_info" ${wht}
   done <<< "$ARCHINSTALL_fdisklist"
 
-  printf "%b%s%b" ${cyn} "Select disk: " ${wht}
-  read ARCHINSTALL_disk
+  read_input "Select disk"
+  ARCHINSTALL_disk="$retVal"
 done
 
 # Check if selected disk already has a partition table
@@ -187,7 +192,7 @@ log_result "  Partition 1" "${ARCHINSTALL_disk}1: EFI System        ${ARCHINSTAL
 log_result "  Partition 2" "${ARCHINSTALL_disk}2: Linux swap        ${ARCHINSTALL_swapsizeMB}MB" ${yel}
 log_result "  Partition 3" "${ARCHINSTALL_disk}3: Linux filsystem   rest" ${yel}
 
-wait_for_confirm
+wait_for_confirm "Correct?"
 wait_for_confirm "Start installation?"
 
 # Reset timer
