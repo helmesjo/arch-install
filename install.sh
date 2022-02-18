@@ -61,9 +61,9 @@ log_ok () {
 export -f log_ok
 
 wait_for_confirm () {
-  prompt="${1:-"Continue"}"
-  printf "\n%s" ""
-  read -p "$prompt [y/n]: " ARCHINSTALL_reply
+  prompt="${1:-"Continue?"}"
+  printf "\n%b%s%b" ${cyn} "$prompt [y/n]: " ${wht}
+  read -p "" ARCHINSTALL_reply
   if [ "$ARCHINSTALL_reply" != "y" ]; then
     exit 1
   fi
@@ -101,35 +101,53 @@ export ARCHINSTALL_default_locale="sv_SE.UTF-8"
 export ARCHINSTALL_default_keymap="sv-latin1"
 export ARCHINSTALL_default_customsetup="https://github.com/helmesjo/dotfiles"
 
+echo ""
+
 export ARCHINSTALL_hostname
-read -p "Hostname: " ARCHINSTALL_hostname
+printf "%b%s%b" ${cyn} "Hostname: " ${wht}
+read ARCHINSTALL_hostname
+
 export ARCHINSTALL_username
-read -p "Username: " ARCHINSTALL_username
+printf "%b%s%b" ${cyn} "Username: " ${wht}
+read ARCHINSTALL_username
+
 export ARCHINSTALL_userpwd
-read -p "$ARCHINSTALL_username pwd: " ARCHINSTALL_userpwd
+printf "%b%s%b" ${cyn} "$ARCHINSTALL_username pwd: " ${wht}
+read ARCHINSTALL_userpwd
+
 export ARCHINSTALL_rootpwd
-read -p "Root pwd: " ARCHINSTALL_rootpwd
-read -p "Timezone (default: $ARCHINSTALL_default_timezone): " ARCHINSTALL_timezone
+printf "%b%s%b" ${cyn} "Root pwd: " ${wht}
+read ARCHINSTALL_rootpwd
+
+printf "%b%s%b" ${cyn} "Timezone (default: $ARCHINSTALL_default_timezone): " ${wht}
+read ARCHINSTALL_timezone
 export ARCHINSTALL_timezone="${ARCHINSTALL_timezone:=$ARCHINSTALL_default_timezone}"
-read -p "Locale (default: $ARCHINSTALL_default_locale): " ARCHINSTALL_locale
+
+printf "%b%s%b" ${cyn} "Locale (default: $ARCHINSTALL_default_locale): " ${wht}
+read ARCHINSTALL_locale
 export ARCHINSTALL_locale="${ARCHINSTALL_locale:=$ARCHINSTALL_default_locale}"
-read -p "Keymap (default: $ARCHINSTALL_default_keymap): " ARCHINSTALL_keymap
+
+printf "%b%s%b" ${cyn} "Keymap (default: $ARCHINSTALL_default_keymap): " ${wht}
+read ARCHINSTALL_keymap
 export ARCHINSTALL_keymap="${ARCHINSTALL_keymap:=$ARCHINSTALL_default_keymap}"
 
-read -p "Pacman packages (default: $ARCHINSTALL_default_pacpackages): " ARCHINSTALL_pacpackages
+printf "%b%s%b" ${cyn} "Pacman packages (default: $ARCHINSTALL_default_pacpackages): " ${wht}
+read ARCHINSTALL_pacpackages
 export ARCHINSTALL_pacpackages="${ARCHINSTALL_pacpackages:=$ARCHINSTALL_default_pacpackages}"
 
-read -p "AUR packages (default: $ARCHINSTALL_default_aurpackages): " ARCHINSTALL_aurpackages
+printf "%b%s%b" ${cyn} "AUR packages (default: $ARCHINSTALL_default_aurpackages): " ${wht}
+read ARCHINSTALL_aurpackages
 export ARCHINSTALL_aurpackages="${ARCHINSTALL_aurpackages:=$ARCHINSTALL_default_aurpackages}"
 
-printf "%s\n" "Custom setup repo. Will clone & execute './setup.sh' as user '$ARCHINSTALL_username' (NOPASS)"
-read -p "  URL: ('none' to skip, default: $ARCHINSTALL_default_customsetup): " ARCHINSTALL_customsetup
+printf "\n%b%s\n  %s%b" ${cyn} "Custom setup repo. Will clone & execute './setup.sh' as user '$ARCHINSTALL_username' (NOPASS)" "  URL: ('none' to skip, default: $ARCHINSTALL_default_customsetup): " ${wht}
+read ARCHINSTALL_customsetup
 export ARCHINSTALL_customsetup="${ARCHINSTALL_customsetup:=$ARCHINSTALL_default_customsetup}"
 
 export ARCHINSTALL_cpu=""
 while [[ "$ARCHINSTALL_cpu" != "amd" && "$ARCHINSTALL_cpu" != "intel" ]]
 do
-  read -p "CPU (amd or intel): " ARCHINSTALL_cpu
+  printf "%b%s%b" ${cyn} "CPU (amd or intel): " ${wht}
+  read ARCHINSTALL_cpu
 done
 
 export ARCHINSTALL_disk=""
@@ -146,7 +164,8 @@ do
     printf '\n%b%s\n%b%s%b\n' ${yel} "$disk" ${dyel} "$disk_info" ${wht}
   done <<< "$ARCHINSTALL_fdisklist"
 
-  read -p "Select disk: " ARCHINSTALL_disk
+  printf "%b%s%b" ${cyn} "Select disk: " ${wht}
+  read ARCHINSTALL_disk
 done
 
 # Check if selected disk already has a partition table
@@ -158,9 +177,11 @@ log " VERIFY OPTIONS "
 
 log_result "Hostname" "$ARCHINSTALL_hostname" 
 log_result "Username" "$ARCHINSTALL_username"
-log_result "Timezone" "$ARCHINSTALL_timezone"
 log_result "Root pwd" "$ARCHINSTALL_rootpwd"
 log_result "User pwd" "$ARCHINSTALL_userpwd"
+log_result "Timezone" "$ARCHINSTALL_timezone"
+log_result "Locale" "$ARCHINSTALL_locale"
+log_result "Keymap" "$ARCHINSTALL_keymap"
 log_result "Pacman packages" "$ARCHINSTALL_pacpackages"
 log_result "AUR packages" "$ARCHINSTALL_aurpackages"
 log_result "Custom setup" "$ARCHINSTALL_customsetup (./setup.sh)"
@@ -171,7 +192,7 @@ log_result "  Partition 2" "${ARCHINSTALL_disk}2: 2GB    Linux swap" ${yel}
 log_result "  Partition 3" "${ARCHINSTALL_disk}3: rest   Linux filsystem" ${yel}
 
 wait_for_confirm
-wait_for_confirm "Start installation..."
+wait_for_confirm "Start installation?"
 
 # Reset timer
 SECONDS=0
@@ -399,6 +420,6 @@ log_ok
 
 log " INSTALLATION SUCCESSFUL " ${grn}
 
-wait_for_confirm "Reboot..."
+wait_for_confirm "Reboot?"
 
 reboot
