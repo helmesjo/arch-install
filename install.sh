@@ -82,8 +82,8 @@ log "                                          " ${cyn}
 log "    NOTE: THIS CAN BREAK YOUR COMPUTER    " ${yel}
 log "__________________________________________" ${cyn}
 
-printf "\n%s" ""
-printf "\n%s" ""
+echo ""
+echo ""
 
 log " VERIFY INTERNET "
 
@@ -99,6 +99,8 @@ export ARCHINSTALL_default_timezone="Europe/Amsterdam"
 export ARCHINSTALL_default_locale="sv_SE.UTF-8"
 export ARCHINSTALL_default_keymap="sv-latin1"
 export ARCHINSTALL_default_customsetup="https://github.com/helmesjo/dotfiles"
+export ARCHINSTALL_bootsizeMB="550" #MiB
+export ARCHINSTALL_swapsizeGB="4"   #GiB
 
 echo ""
 
@@ -181,9 +183,9 @@ log_result "Pacman packages" "$ARCHINSTALL_pacpackages"
 log_result "Custom setup" "$ARCHINSTALL_customsetup (./setup.sh)"
 log_result "CPU" "$ARCHINSTALL_cpu" ${yel}
 log_result "Disk" "$ARCHINSTALL_disk" ${yel}
-log_result "  Partition 1" "${ARCHINSTALL_disk}1: 550MB  EFI System" ${yel}
-log_result "  Partition 2" "${ARCHINSTALL_disk}2: 2GB    Linux swap" ${yel}
-log_result "  Partition 3" "${ARCHINSTALL_disk}3: rest   Linux filsystem" ${yel}
+log_result "  Partition 1" "${ARCHINSTALL_disk}1: EFI System        ${ARCHINSTALL_bootsizeMB}MB" ${yel}
+log_result "  Partition 2" "${ARCHINSTALL_disk}2: Linux swap        ${ARCHINSTALL_swapsizeGB}GB" ${yel}
+log_result "  Partition 3" "${ARCHINSTALL_disk}3: Linux filsystem   rest" ${yel}
 
 wait_for_confirm
 wait_for_confirm "Start installation?"
@@ -203,10 +205,10 @@ for partnr in ${ARCHINSTALL_existingdiskpartitions[@]}; do
 done
 
 parted $ARCHINSTALL_disk mklabel gpt
-parted $ARCHINSTALL_disk mkpart "\"EFI System\"" fat32 1MiB 551MiB         # 550MB for EFI
-parted $ARCHINSTALL_disk set 1 esp on                                  # Flag as EFI
-parted $ARCHINSTALL_disk mkpart "\"Linux swap\"" linux-swap 551MiB 4551MiB # 4GB for swap
-parted $ARCHINSTALL_disk mkpart "root" ext4 4551MiB 100%               # Rest for root
+parted $ARCHINSTALL_disk mkpart "\"EFI System\"" fat32 1MiB ${ARCHINSTALL_bootsizeMB}MiB            # EFI
+parted $ARCHINSTALL_disk set 1 esp on                                                               # Flag as EFI
+parted $ARCHINSTALL_disk mkpart "\"Linux swap\"" linux-swap ${ARCHINSTALL_bootsizeMB}MiB ${ARCHINSTALL_swapsizeGB}.551GiB # Swap
+parted $ARCHINSTALL_disk mkpart "root" ext4 ${ARCHINSTALL_swapsizeGB}.551GiB 100%                   # Rest for root
 
 log_ok
 
