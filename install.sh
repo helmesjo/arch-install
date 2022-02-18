@@ -6,6 +6,7 @@ export mag=$'\e[1;35m'
 export red=$'\e[1;31m'
 export grn=$'\e[1;32m'
 export yel=$'\e[1;93m'
+export dyel=$'\e[0;93m'
 export wht=$'\e[0m'
 export ARCHINSTALL_duration=0
 export ARCHINSTALL_showduration=false
@@ -125,20 +126,33 @@ printf "%s\n" "Custom setup repo. Will clone & execute './setup.sh' as user '$AR
 read -p "  URL: ('none' to skip, default: $ARCHINSTALL_default_customsetup): " ARCHINSTALL_customsetup
 export ARCHINSTALL_customsetup="${ARCHINSTALL_customsetup:=$ARCHINSTALL_default_customsetup}"
 
-ARCHINSTALL_fdisklist=$(fdisk -l 2>&1)
-
-export ARCHINSTALL_disk=""
-until sudo partprobe -d -s $ARCHINSTALL_disk >/dev/null 2>&1
-do
-  printf '\n%b%s%b\n\n' ${yel} "$ARCHINSTALL_fdisklist" ${wht}
-  read -p "Select disk: " ARCHINSTALL_disk
-done
-
 export ARCHINSTALL_cpu=""
 while [[ "$ARCHINSTALL_cpu" != "amd" && "$ARCHINSTALL_cpu" != "intel" ]]
 do
   read -p "CPU (amd or intel): " ARCHINSTALL_cpu
 done
+
+export ARCHINSTALL_disk=""
+
+# Filter out & print disks of interest (ignore loop devices)
+ARCHINSTALL_fdisklist=$(fdisk -l | grep 'Disk /dev' | sed '/loop/d')
+until partprobe -d -s $ARCHINSTALL_disk >/dev/null 2>&1
+do
+  # Print disk info
+  while IFS= read -r disk;
+  do
+    diskname=$(echo "$disk" | awk '{print $2}' | sed 's/://')
+    disk_info=$(fdisk -l $diskname | sed '/Disk \/dev/d' | sed 's/^/  /')
+    printf '\n%b%s\n%b%s%b\n' ${yel} "$disk" ${dyel} "$disk_info" ${wht}
+  done <<< "$ARCHINSTALL_fdisklist"
+
+  read -p "Select disk: " ARCHINSTALL_disk
+done
+
+# Check if selected disk already has a partition table
+if [ "$(fdisk $ARCHINSTALL_disk -l | grep 'Disklabel type:' | awk '{print $3}')" != "" ]; then
+  wait_for_confirm "$ARCHINSTALL_disk contains data which will be erased. Proceed anyways?"
+fi
 
 log " VERIFY OPTIONS "
 
@@ -152,12 +166,12 @@ log_result "AUR packages" "$ARCHINSTALL_aurpackages"
 log_result "Custom setup" "$ARCHINSTALL_customsetup (./setup.sh)"
 log_result "CPU" "$ARCHINSTALL_cpu" ${yel}
 log_result "Disk" "$ARCHINSTALL_disk" ${yel}
-log_result "  Partition 1" "${ARCHINSTALL_disk}1: 550MB  GPT" ${yel}
+log_result "  Partition 1" "${ARCHINSTALL_disk}1: 550MB  EFI System" ${yel}
 log_result "  Partition 2" "${ARCHINSTALL_disk}2: 2GB    Linux swap" ${yel}
 log_result "  Partition 3" "${ARCHINSTALL_disk}3: rest   Linux filsystem" ${yel}
 
 wait_for_confirm
-wait_for_confirm "Start installation"
+wait_for_confirm "Start installation..."
 
 # Reset timer
 SECONDS=0
@@ -166,33 +180,18 @@ ARCHINSTALL_showduration=true
 
 log " PARTITION DISK "
 
-(
-echo g # Create a new empty GPT partition table
-# Create partitions (EFI, swap & root)
-echo n # Add EFI partition
-echo 1 # Partition number
-echo   # First sector (accept default)
-echo +550M # 550MB for EFI
-echo n # Add swap partition
-echo 2 # Partition number
-echo   # First sector (accept default)
-echo +2G  # 2GB for swap
-echo n # Add root partition
-echo 3 # Partition number
-echo   # First sector (accept default)
-echo   # Last sector (use remainder)
-# Change partition types
-echo t # Change type
-echo 1 # Partition number
-echo 1 # Partition type 'EFI System'
-echo t # Change type
-echo 2 # Partition number
-echo 19 # Partition type 'Linux swap'
-echo t # Change type
-echo 3 # Partition number
-echo 20 # Partition type 'Linux filesystem'
-echo w # Write changes
-) | fdisk $ARCHINSTALL_disk
+ARCHINSTALL_diskpartitioncount=$(lsblk $ARCHINSTALL_disk | grep 'part' | wc -l || echo 0)
+# Erase existing partitions (if any)
+for i in $(seq 1 $ARCHINSTALL_diskpartitioncount)
+do
+  parted $ARCHINSTALL_disk rm $i
+done
+
+parted $ARCHINSTALL_disk mklabel gpt
+parted $ARCHINSTALL_disk mkpart "\"EFI System\"" fat32 1MiB 551MiB         # 550MB for EFI
+parted $ARCHINSTALL_disk set 1 esp on                                  # Flag as EFI
+parted $ARCHINSTALL_disk mkpart "\"Linux swap\"" linux-swap 551MiB 4551MiB # 4GB for swap
+parted $ARCHINSTALL_disk mkpart "root" ext4 4551MiB 100%               # Rest for root
 
 log_ok
 
@@ -400,6 +399,6 @@ log_ok
 
 log " INSTALLATION SUCCESSFUL " ${grn}
 
-wait_for_confirm "Reboot"
+wait_for_confirm "Reboot..."
 
 reboot
