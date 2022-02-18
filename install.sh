@@ -195,11 +195,11 @@ ARCHINSTALL_showduration=true
 
 log " PARTITION DISK "
 
-ARCHINSTALL_diskpartitioncount=$(lsblk $ARCHINSTALL_disk | grep 'part' | wc -l || echo 0)
-# Erase existing partitions (if any)
-for i in $(seq 1 $ARCHINSTALL_diskpartitioncount)
-do
-  parted $ARCHINSTALL_disk rm $i
+# Find and erase existing partitions (if any)
+ARCHINSTALL_lsblkpartitioncolumn=$(lsblk $ARCHINSTALL_disk | head -n1 | sed 's/\s\+/\n/g' | grep -nx 'MAJ:MIN' | cut -d':' -f1)
+ARCHINSTALL_existingdiskpartitions=$(lsblk $ARCHINSTALL_disk | tail -n +3 | awk -v C=$ARCHINSTALL_lsblkpartitioncolumn '{print $C}' | cut -d':' -f2)
+for partnr in ${ARCHINSTALL_existingdiskpartitions[@]}; do
+  parted $ARCHINSTALL_disk rm $partnr
 done
 
 parted $ARCHINSTALL_disk mklabel gpt
