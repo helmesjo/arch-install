@@ -89,6 +89,7 @@ read_input() {
   
   retVal=${ARCHINSTALL_reply:=$default}
 }
+export -f read_input
 
 echo ""
 echo ""
@@ -382,6 +383,12 @@ log_ok
 enable_passwd
 # Re-enable password prompt
 # -----------------------------------
+
+log " CLEAN UP UNUSED PACKAGES "
+
+pacman -Qtdq | pacman --noconfirm -Rns - 2>/dev/null || true
+
+log_ok
 
 exit 0
 EOF
