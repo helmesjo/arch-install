@@ -190,9 +190,9 @@ log_result "Pacman packages" "$ARCHINSTALL_pacpackages"
 log_result "Custom setup" "$ARCHINSTALL_customsetup (./setup.sh)"
 log_result "CPU" "$ARCHINSTALL_cpu" ${yel}
 log_result "Disk" "$ARCHINSTALL_disk" ${yel}
-log_result "  Partition 1" "${ARCHINSTALL_disk}1: EFI System        ${ARCHINSTALL_bootsizeMB}MB" ${yel}
-log_result "  Partition 2" "${ARCHINSTALL_disk}2: Linux swap        ${ARCHINSTALL_swapsizeMB}MB" ${yel}
-log_result "  Partition 3" "${ARCHINSTALL_disk}3: Linux filsystem   rest" ${yel}
+log_result "  Partition 1" "EFI System        ${ARCHINSTALL_bootsizeMB}MB" ${yel}
+log_result "  Partition 2" "Linux swap        ${ARCHINSTALL_swapsizeMB}MB" ${yel}
+log_result "  Partition 3" "Linux filsystem   rest" ${yel}
 
 wait_for_confirm "Correct?"
 wait_for_confirm "Start installation?"
