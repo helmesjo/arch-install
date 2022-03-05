@@ -339,7 +339,11 @@ log_ok
 
 log " INSTALL NETWORK MANAGER "
 
-pacman -S --noconfirm networkmanager
+pacman -S --noconfirm iwd networkmanager
+echo [device]            > /etc/NetworkManager/conf.d/wifi_backend.conf
+echo "wifi.backend=iwd" >> /etc/NetworkManager/conf.d/wifi_backend.conf
+
+systemctl enable iwd
 systemctl enable NetworkManager
 
 log_ok
