@@ -157,7 +157,8 @@ export ARCHINSTALL_cpu="$retVal"
 export ARCHINSTALL_disk=""
 # Filter out & print disks of interest (ignore loop devices)
 ARCHINSTALL_fdisklist=$(fdisk -l | grep 'Disk /dev' | sed '/loop/d')
-until partprobe -d -s $ARCHINSTALL_disk >/dev/null 2>&1
+# Loop until a valid disk has been selected
+until partprobe -d -s "$ARCHINSTALL_disk" >/dev/null 2>&1
 do
   # Print disk info
   while IFS= read -r disk;
