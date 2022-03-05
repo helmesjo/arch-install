@@ -204,10 +204,9 @@ ARCHINSTALL_showduration=true
 
 log " PARTITION DISK "
 
-# Find and erase any existing partition(s) & disk label
-ARCHINSTALL_lsblkpartitioncolumn=$(lsblk $ARCHINSTALL_disk | head -n1 | sed 's/\s\+/\n/g' | grep -nx 'MAJ:MIN' | cut -d':' -f1)
-ARCHINSTALL_existingdiskpartitions=$(lsblk $ARCHINSTALL_disk | tail -n +3 | awk -v C=$ARCHINSTALL_lsblkpartitioncolumn '{print $C}' | cut -d':' -f2)
-for partnr in ${ARCHINSTALL_existingdiskpartitions[@]}; do
+# Find and erase any existing partition(s) & disk label (extract partition numbers)
+ARCHINSTALL_existingdiskpartitionnumbers=($(fdisk $ARCHINSTALL_disk -l | tail +10 | awk '{print $1}' | awk '{print substr($1, length, 1)}' | xargs))
+for partnr in ${ARCHINSTALL_existingdiskpartitionnumbers[@]}; do
   parted $ARCHINSTALL_disk rm $partnr
 done
 wipefs --all --force $ARCHINSTALL_disk
@@ -218,22 +217,25 @@ parted $ARCHINSTALL_disk set 1 esp on                                           
 parted $ARCHINSTALL_disk mkpart "\"Linux swap\"" linux-swap $((${ARCHINSTALL_bootsizeMB}+1))MiB $((${ARCHINSTALL_swapsizeMB} + ${ARCHINSTALL_bootsizeMB}))MiB # Swap
 parted $ARCHINSTALL_disk mkpart "root" ext4 $((${ARCHINSTALL_swapsizeMB} + ${ARCHINSTALL_bootsizeMB} + 1))MiB 100%                   # Rest for root
 
+# Extract new partition devices (full path, eg. '/dev/sda0')
+ARCHINSTALL_newdiskpartitions=($(fdisk $ARCHINSTALL_disk -l | tail +10 | awk '{print $1}' | xargs))
+
 log_ok
 
 log " MAKE FILESYSTEMS "
 
-mkfs.fat -F32 ${ARCHINSTALL_disk}1
-mkswap ${ARCHINSTALL_disk}2
-swapon ${ARCHINSTALL_disk}2
-mkfs.ext4 ${ARCHINSTALL_disk}3
+mkfs.fat -F32 ${ARCHINSTALL_newdiskpartitions[0]}
+mkswap ${ARCHINSTALL_newdiskpartitions[1]}
+swapon ${ARCHINSTALL_newdiskpartitions[1]}
+mkfs.ext4 ${ARCHINSTALL_newdiskpartitions[2]}
 
 log_ok
 
 log " MOUNT PARTITIONS "
 
-mount ${ARCHINSTALL_disk}3 /mnt
+mount ${ARCHINSTALL_newdiskpartitions[2]} /mnt
 mkdir /mnt/boot
-mount ${ARCHINSTALL_disk}1 /mnt/boot
+mount ${ARCHINSTALL_newdiskpartitions[0]} /mnt/boot
 
 log_ok
 
