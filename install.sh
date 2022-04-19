@@ -329,15 +329,15 @@ echo $ARCHINSTALL_userpwd
 
 usermod -aG wheel,audio,video,storage,optical $ARCHINSTALL_username
 
-pacman -S --noconfirm sudo
+pacman -S --needed --noconfirm sudo
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
 log_ok
 
 log " SETUP BOOTLOADER "
 
-pacman -S --noconfirm ${ARCHINSTALL_cpu}-ucode
-pacman -S --noconfirm grub efibootmgr dosfstools os-prober mtools
+pacman -S --needed --noconfirm ${ARCHINSTALL_cpu}-ucode
+pacman -S --needed --noconfirm grub efibootmgr dosfstools os-prober mtools
 grub-install --target=x86_64-efi --bootloader-id=grub_uefi --efi-directory=/boot --recheck
 grub-mkconfig -o /boot/grub/grub.cfg
 
@@ -345,7 +345,7 @@ log_ok
 
 log " INSTALL NETWORK MANAGER "
 
-pacman -S --noconfirm iwd networkmanager
+pacman -S --needed --noconfirm iwd networkmanager
 echo [device]            > /etc/NetworkManager/conf.d/wifi_backend.conf
 echo "wifi.backend=iwd" >> /etc/NetworkManager/conf.d/wifi_backend.conf
 
@@ -359,14 +359,14 @@ log " INSTALL DEVELOPMENT PACKAGES: $ARCHINSTALL_devpackages "
 # Compile packages using all cores
 sed -i 's/^#MAKEFLAGS=.*/MAKEFLAGS="-j$(nproc)"/' /etc/makepkg.conf
 
-pacman -S --noconfirm $ARCHINSTALL_devpackages
+pacman -S --needed --noconfirm $ARCHINSTALL_devpackages
 
 log_ok
 
 if test -n "${ARCHINSTALL_pacpackages-}"; then
   log " INSTALL PACMAN PACKAGES: $ARCHINSTALL_pacpackages "
 
-  pacman -S --noconfirm $ARCHINSTALL_pacpackages
+  pacman -S --needed --noconfirm $ARCHINSTALL_pacpackages
 
   log_ok
 fi
@@ -425,6 +425,7 @@ log_ok
 
 log " INSTALLATION SUCCESSFUL " ${grn}
 
-wait_for_confirm "Reboot?"
+wait_for_confirm "Shutdown now? Note: Eject install medium before booting."
 
-reboot
+shutdown now
+
