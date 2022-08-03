@@ -266,7 +266,7 @@ enable_passwd () {
 
 log " PACMAN UPGRADE "
 
-pacman -Syu --noconfirm
+pacman -Sy --noconfirm archlinux-keyring && pacman -Su --noconfirm
 
 log_ok
 
