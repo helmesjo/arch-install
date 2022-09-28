@@ -300,7 +300,6 @@ echo LC_IDENTIFICATION="$ARCHINSTALL_locale" >> /etc/locale.conf
 #echo LC_MESSAGES="$ARCHINSTALL_locale""      >> /etc/locale.conf
 
 echo KEYMAP="$ARCHINSTALL_keymap"             >  /etc/vconsole.conf
-localectl set-keymap $ARCHINSTALL_keymap
 
 log_ok
 
