@@ -6,6 +6,7 @@ Just run:
 `bash <(curl -s https://raw.githubusercontent.com/helmesjo/arch-install/main/install.sh)`
 
 ![](examples/arch-install.gif)
+_Note that this executes my personal `dotfiles/setup.sh` script as part of the [_customization hook_](#customization-hook). When prompted you'd enter your own._
 
 ## Customization hook
 In the [pre-step](https://github.com/helmesjo/arch-install/blob/65c660bb3e13a03bad2d0a848f3232a2c7791df4/install.sh#L71-L119), one can [supply a url](https://github.com/helmesjo/arch-install/blob/65c660bb3e13a03bad2d0a848f3232a2c7791df4/install.sh#L102-L104) to a git repository of choice that contains a `setup.sh` script at root level. During installation this script will be exected, and any custom setup can be done.
