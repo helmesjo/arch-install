@@ -239,9 +239,9 @@ mount ${ARCHINSTALL_newdiskpartitions[0]} /mnt/boot
 
 log_ok
 
-log " UPGRADE KEYRING "
+log " UPDATE KEYRING "
 
-pacman -Syu --noconfirm archlinux-keyring
+pacman -Sy --noconfirm archlinux-keyring
 
 log_ok
 
@@ -272,7 +272,7 @@ enable_passwd () {
 
 log " PACMAN UPGRADE "
 
-pacman -Sy --noconfirm archlinux-keyring && pacman -Syu --noconfirm
+pacman -Syu --noconfirm
 
 log_ok
 
