@@ -270,12 +270,6 @@ enable_passwd () {
   sed -i 's/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 }
 
-log " PACMAN UPGRADE "
-
-pacman -Syu --noconfirm
-
-log_ok
-
 log " SETUP TIMEZONE: $ARCHINSTALL_timezone "
 
 ln -sf /usr/share/zoneinfo/$ARCHINSTALL_timezone /etc/localtime
