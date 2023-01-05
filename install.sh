@@ -239,6 +239,12 @@ mount ${ARCHINSTALL_newdiskpartitions[0]} /mnt/boot
 
 log_ok
 
+log " PACMAN UPGRADE "
+
+pacman -Sy --noconfirm archlinux-keyring && pacman -Syu --noconfirm
+
+log_ok
+
 log " INSTALL KERNEL "
 
 pacstrap /mnt base linux linux-firmware
@@ -263,12 +269,6 @@ disable_passwd () {
 enable_passwd () {
   sed -i 's/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 }
-
-log " PACMAN UPGRADE "
-
-pacman -Sy --noconfirm archlinux-keyring && pacman-key --refresh && pacman -Syu --noconfirm
-
-log_ok
 
 log " SETUP TIMEZONE: $ARCHINSTALL_timezone "
 
