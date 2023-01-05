@@ -239,9 +239,9 @@ mount ${ARCHINSTALL_newdiskpartitions[0]} /mnt/boot
 
 log_ok
 
-log " PACMAN UPGRADE "
+log " UPGRADE KEYRING "
 
-pacman -Sy --noconfirm archlinux-keyring && pacman -Syu --noconfirm
+pacman -Syu --noconfirm archlinux-keyring
 
 log_ok
 
@@ -269,6 +269,12 @@ disable_passwd () {
 enable_passwd () {
   sed -i 's/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 }
+
+log " PACMAN UPGRADE "
+
+pacman -Sy --noconfirm archlinux-keyring && pacman -Syu --noconfirm
+
+log_ok
 
 log " SETUP TIMEZONE: $ARCHINSTALL_timezone "
 
