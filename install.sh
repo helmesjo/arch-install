@@ -177,6 +177,17 @@ if [ "$(fdisk $ARCHINSTALL_disk -l | grep 'Disklabel type:' | awk '{print $3}')"
   wait_for_confirm "$ARCHINSTALL_disk contains data which will be erased. Proceed anyways?"
 fi
 
+ARCHINSTALL_disk_totalsize="$(parted $ARCHINSTALL_disk print free | grep 'Disk /dev' | awk '{print $3}')"
+# Loop until a valid total (usage) size has been specified
+export ARCHINSTALL_disk_totalusage=""
+until echo "$ARCHINSTALL_disk_totalusage" | grep -E '^[1-9][0-9]?%$|^100%$' >/dev/null 2>&1
+do
+  # Print disk info
+  log_result "$ARCHINSTALL_disk" "$ARCHINSTALL_disk_totalsize"  ${yel}
+  read_input "Select total disk usage for root (eg. 80%)"
+  ARCHINSTALL_disk_totalusage="$retVal"
+done
+
 log " VERIFY OPTIONS "
 
 log_result "Hostname" "$ARCHINSTALL_hostname" 
@@ -192,7 +203,7 @@ log_result "CPU" "$ARCHINSTALL_cpu" ${yel}
 log_result "Disk" "$ARCHINSTALL_disk" ${yel}
 log_result "  Partition 1" "EFI System        ${ARCHINSTALL_bootsizeMB}MB" ${yel}
 log_result "  Partition 2" "Linux swap        ${ARCHINSTALL_swapsizeMB}MB" ${yel}
-log_result "  Partition 3" "Linux filsystem   rest" ${yel}
+log_result "  Partition 3" "Linux filsystem   ..$ARCHINSTALL_disk_totalusage" ${yel}
 
 wait_for_confirm "Correct?"
 wait_for_confirm "Start installation?"
@@ -215,7 +226,7 @@ parted $ARCHINSTALL_disk mklabel gpt
 parted $ARCHINSTALL_disk mkpart "\"EFI System\"" fat32 1MiB ${ARCHINSTALL_bootsizeMB}MiB            # EFI
 parted $ARCHINSTALL_disk set 1 esp on                                                               # Flag as EFI
 parted $ARCHINSTALL_disk mkpart "\"Linux swap\"" linux-swap $((${ARCHINSTALL_bootsizeMB}+1))MiB $((${ARCHINSTALL_swapsizeMB} + ${ARCHINSTALL_bootsizeMB}))MiB # Swap
-parted $ARCHINSTALL_disk mkpart "root" ext4 $((${ARCHINSTALL_swapsizeMB} + ${ARCHINSTALL_bootsizeMB} + 1))MiB 100%                   # Rest for root
+parted $ARCHINSTALL_disk mkpart "root" ext4 $((${ARCHINSTALL_swapsizeMB} + ${ARCHINSTALL_bootsizeMB} + 1))MiB $ARCHINSTALL_disk_totalusage                    # Rest for root
 
 # Extract new partition devices (full path, eg. '/dev/sda0')
 ARCHINSTALL_newdiskpartitions=($(fdisk $ARCHINSTALL_disk -l | tail +10 | awk '{print $1}' | xargs))
