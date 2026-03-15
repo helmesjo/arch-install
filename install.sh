@@ -131,10 +131,10 @@ echo ""
 read_input "Architecture" "$ARCHINSTALL_default_arch"
 export ARCHINSTALL_arch="$retVal"
 
-read_input "Hostname"
+read_input "Hostname" "" '^[a-z_][a-z0-9_-]{0,31}$'
 export ARCHINSTALL_hostname="$retVal"
 
-read_input "Username"
+read_input "Username" "" '^[a-z_][a-z0-9_-]{0,31}$'
 export ARCHINSTALL_username="$retVal"
 
 read_input "$ARCHINSTALL_username pwd"
