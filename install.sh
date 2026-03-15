@@ -107,7 +107,7 @@ echo ""
 
 log " VERIFY INTERNET "
 
-ping -c2 -W2000 archlinux.org
+ping -c2 -W2 archlinux.org
 
 log_ok
 
