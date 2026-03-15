@@ -17,15 +17,15 @@ log() {
   local termwidth="$(tput cols)"
 
   local duration=""
-  if [ "$ARCHINSTALL_showduration" = true ]; then
+  if [[ "$ARCHINSTALL_showduration" = true ]]; then
     ARCHINSTALL_duration=$(($ARCHINSTALL_duration+$SECONDS))
     local duration=" $(date +%T -d "1/1 + $ARCHINSTALL_duration sec")"
-    if [ $SECONDS -gt 0 ]; then
+    if [[ $SECONDS -gt 0 ]]; then
       SECONDS=0
     fi
   fi
   local text=$1
-  if [ ${#text} -gt 64 ]; then
+  if [[ ${#text} -gt 64 ]]; then
    text="$(echo $text | cut -c -64)..."
   fi
 
@@ -63,7 +63,7 @@ wait_for_confirm () {
   local prompt="${1:-"Continue?"}"
   printf "\n%b%s%b" ${cyn} "$prompt [y/n]: " ${wht}
   read -p "" ARCHINSTALL_reply
-  if [ "$ARCHINSTALL_reply" != "y" ]; then
+  if [[ "$ARCHINSTALL_reply" != "y" ]]; then
     exit 1
   fi
   echo ""
@@ -75,14 +75,14 @@ read_input() {
   local default="${2:-}"
   local matcher=${3:-.*}
 
-  if [ -n "$default" ]; then
+  if [[ -n "$default" ]]; then
     local defaultprompt=" (default: $default)"
   else
     local defaultprompt=""
   fi
 
   local ARCHINSTALL_reply
-  while [ -z ${ARCHINSTALL_reply+x} ] || ! [[ "$ARCHINSTALL_reply" =~ $matcher ]]; do
+  while [[ -z ${ARCHINSTALL_reply+x} ]] || ! [[ "$ARCHINSTALL_reply" =~ $matcher ]]; do
     printf "%b%s%b%s" ${cyn} "$prompt" ${wht} "$defaultprompt: "
     read ARCHINSTALL_reply
   done
@@ -177,7 +177,7 @@ do
 done
 
 # Check if selected disk already has a partition table
-if [ "$(fdisk $ARCHINSTALL_disk -l | grep 'Disklabel type:' | awk '{print $3}')" != "" ]; then
+if [[ "$(fdisk $ARCHINSTALL_disk -l | grep 'Disklabel type:' | awk '{print $3}')" != "" ]]; then
   wait_for_confirm "$ARCHINSTALL_disk contains data which will be erased. Proceed anyways?"
 fi
 
@@ -411,7 +411,7 @@ repodir="/home/$ARCHINSTALL_username/$reponame"
 su -l "$ARCHINSTALL_username" -c "cd /home/$ARCHINSTALL_username && git clone $ARCHINSTALL_customsetup $repodir || true"
 
 # Skip if url invalid & nothing was cloned (eg. user typed 'skip'), or setup.sh not found.
-if [ -f $repodir/setup.sh ]; then
+if [[ -f $repodir/setup.sh ]]; then
   log " RUNNING $repodir/setup.sh... " ${mag}
   su -l "$ARCHINSTALL_username" -c "cd $repodir && ./setup.sh"
 else
