@@ -80,13 +80,13 @@ read_input() {
   else
     local defaultprompt=""
   fi
-  
+
   local ARCHINSTALL_reply
   while [ -z ${ARCHINSTALL_reply+x} ] || ! [[ "$ARCHINSTALL_reply" =~ $matcher ]]; do
     printf "%b%s%b%s" ${cyn} "$prompt" ${wht} "$defaultprompt: "
     read ARCHINSTALL_reply
   done
-  
+
   retVal=${ARCHINSTALL_reply:=$default}
 }
 export -f read_input
@@ -112,7 +112,11 @@ ping -c2 -W2000 archlinux.org
 log_ok
 
 log " OPTIONS "
-
+export ARCHINSTALL_default_arch="$(uname -m | sed 's/aarch64/arm64/;s/armv[0-9]*l/arm/;s/x86_64/x86_64/')"
+export ARCHINSTALL_hwpackages="amd-ucode intel-ucode linux-headers dkms \
+  mesa vulkan-icd-loader vulkan-intel vulkan-radeon libva-mesa-driver \
+  bluez bluez-utils \
+  pipewire pipewire-alsa pipewire-pulse wireplumber"
 export ARCHINSTALL_devpackages="base-devel git"
 export ARCHINSTALL_default_pacpackages=""
 export ARCHINSTALL_default_timezone="Europe/Amsterdam"
@@ -123,6 +127,9 @@ export ARCHINSTALL_bootsizeMB="550"
 export ARCHINSTALL_swapsizeMB="4000"
 
 echo ""
+
+read_input "Architecture" "$ARCHINSTALL_default_arch"
+export ARCHINSTALL_arch="$retVal"
 
 read_input "Hostname"
 export ARCHINSTALL_hostname="$retVal"
@@ -150,9 +157,6 @@ export ARCHINSTALL_pacpackages="$retVal"
 
 read_input "Custom setup repo" "$ARCHINSTALL_default_customsetup"
 export ARCHINSTALL_customsetup="$retVal"
-
-read_input "CPU [amd|intel]" "" "[amd|intel]"
-export ARCHINSTALL_cpu="$retVal"
 
 export ARCHINSTALL_disk=""
 # Filter out & print disks of interest (ignore loop devices)
@@ -190,16 +194,17 @@ done
 
 log " VERIFY OPTIONS "
 
-log_result "Hostname" "$ARCHINSTALL_hostname" 
+log_result "Architecture" "$ARCHINSTALL_arch"
+log_result "Hostname" "$ARCHINSTALL_hostname"
 log_result "Username" "$ARCHINSTALL_username"
 log_result "Root pwd" "$ARCHINSTALL_rootpwd"
 log_result "User pwd" "$ARCHINSTALL_userpwd"
 log_result "Timezone" "$ARCHINSTALL_timezone"
 log_result "Locale" "$ARCHINSTALL_locale"
 log_result "Keymap" "$ARCHINSTALL_keymap"
-log_result "Pacman packages" "$ARCHINSTALL_pacpackages"
+log_result "Hardware packages" "$ARCHINSTALL_hwpackages"
+log_result "Additional packages" "$ARCHINSTALL_pacpackages"
 log_result "Custom setup" "$ARCHINSTALL_customsetup (./setup.sh)"
-log_result "CPU" "$ARCHINSTALL_cpu" ${yel}
 log_result "Disk" "$ARCHINSTALL_disk" ${yel}
 log_result "  Partition 1" "EFI System        ${ARCHINSTALL_bootsizeMB}MB" ${yel}
 log_result "  Partition 2" "Linux swap        ${ARCHINSTALL_swapsizeMB}MB" ${yel}
@@ -256,9 +261,16 @@ pacman -Sy --noconfirm archlinux-keyring
 
 log_ok
 
-log " INSTALL KERNEL "
+log " INSTALL KERNEL ($ARCHINSTALL_arch) "
 
-pacstrap /mnt base linux linux-firmware
+if [[ "$ARCHINSTALL_arch" == "arm64" ]]; then
+  KERNELPKG="linux-aarch64"      # official 64-bit multi-platform
+elif [[ "$ARCHINSTALL_arch" == "arm" ]]; then
+  KERNELPKG="linux-armv7"        # official 32-bit multi-platform (armv7h)
+else
+  KERNELPKG="linux"
+fi
+pacstrap /mnt base $KERNELPKG linux-firmware
 
 log_ok
 
@@ -305,11 +317,6 @@ echo LC_TELEPHONE="$ARCHINSTALL_locale"      >> /etc/locale.conf
 echo LC_MEASUREMENT="$ARCHINSTALL_locale"    >> /etc/locale.conf
 echo LC_IDENTIFICATION="$ARCHINSTALL_locale" >> /etc/locale.conf
 
-#echo LC_COLLATE="$ARCHINSTALL_locale""       >> /etc/locale.conf
-#echo LANGUAGE="$ARCHINSTALL_locale""         >> /etc/locale.conf
-#echo LC_CTYPE="$ARCHINSTALL_locale""         >> /etc/locale.conf
-#echo LC_MESSAGES="$ARCHINSTALL_locale""      >> /etc/locale.conf
-
 echo KEYMAP="$ARCHINSTALL_keymap"             >  /etc/vconsole.conf
 
 log_ok
@@ -330,25 +337,26 @@ echo $ARCHINSTALL_rootpwd
 echo $ARCHINSTALL_rootpwd
 ) | passwd
 
-useradd -m $ARCHINSTALL_username
+useradd -m "$ARCHINSTALL_username"
 
 (
-echo $ARCHINSTALL_userpwd
-echo $ARCHINSTALL_userpwd
-) | passwd $ARCHINSTALL_username
+echo "$ARCHINSTALL_userpwd"
+echo "$ARCHINSTALL_userpwd"
+) | passwd "$ARCHINSTALL_username"
 
-usermod -aG wheel,audio,video,storage,optical $ARCHINSTALL_username
+usermod -aG wheel,audio,video,storage,optical "$ARCHINSTALL_username"
 
 pacman -S --needed --noconfirm sudo
 sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
 log_ok
 
-log " SETUP BOOTLOADER "
+log " SETUP BOOTLOADER + HARDWARE SUPPORT "
 
-pacman -S --needed --noconfirm ${ARCHINSTALL_cpu}-ucode
+pacman -S --needed --noconfirm $ARCHINSTALL_hwpackages
+
 pacman -S --needed --noconfirm grub efibootmgr dosfstools os-prober mtools
-grub-install --target=x86_64-efi --bootloader-id=grub_uefi --efi-directory=/boot --recheck
+grub-install --target=$ARCHINSTALL_arch-efi --bootloader-id=grub_uefi --efi-directory=/boot --recheck
 grub-mkconfig -o /boot/grub/grub.cfg
 
 log_ok
@@ -361,6 +369,15 @@ echo "wifi.backend=iwd" >> /etc/NetworkManager/conf.d/wifi_backend.conf
 
 systemctl enable iwd
 systemctl enable NetworkManager
+
+log_ok
+
+log " ENABLE HARDWARE SERVICES "
+
+systemctl enable bluetooth
+# PipeWire is deliberately run as a user service (not system-wide)
+# — this is the official, recommended setup on Arch Linux.
+su -l "$ARCHINSTALL_username" -c "systemctl --user enable pipewire pipewire-pulse wireplumber" 2>/dev/null || true
 
 log_ok
 
@@ -391,12 +408,12 @@ log " CUSTOM SETUP "
 
 reponame=$(basename $ARCHINSTALL_customsetup)
 repodir="/home/$ARCHINSTALL_username/$reponame"
-su -c "cd /home/$ARCHINSTALL_username && git clone $ARCHINSTALL_customsetup $repodir || true" $ARCHINSTALL_username
+su -l "$ARCHINSTALL_username" -c "cd /home/$ARCHINSTALL_username && git clone $ARCHINSTALL_customsetup $repodir || true"
 
 # Skip if url invalid & nothing was cloned (eg. user typed 'skip'), or setup.sh not found.
 if [ -f $repodir/setup.sh ]; then
   log " RUNNING $repodir/setup.sh... " ${mag}
-  su -c "cd $repodir && ./setup.sh" $ARCHINSTALL_username
+  su -l "$ARCHINSTALL_username" -c "cd $repodir && ./setup.sh"
 else
   log " SKIPPING CUSTOM SETUP: '$repodir/setup.sh' not found " ${yel}
 fi
@@ -438,4 +455,3 @@ log " INSTALLATION SUCCESSFUL " ${grn}
 wait_for_confirm "Shutdown now? Note: Eject install medium before booting."
 
 shutdown now
-
