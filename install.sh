@@ -115,6 +115,7 @@ log " OPTIONS "
 export ARCHINSTALL_default_arch="$(uname -m | sed 's/aarch64/arm64/;s/armv[0-9]*l/arm/;s/x86_64/x86_64/')"
 export ARCHINSTALL_hwpackages="amd-ucode intel-ucode linux-headers dkms \
   mesa vulkan-icd-loader vulkan-intel vulkan-radeon libva-mesa-driver \
+  usbmuxd libimobiledevice android-udev \
   bluez bluez-utils \
   pipewire pipewire-alsa pipewire-pulse wireplumber"
 export ARCHINSTALL_devpackages="base-devel git"
@@ -374,7 +375,7 @@ log_ok
 
 log " ENABLE HARDWARE SERVICES "
 
-systemctl enable bluetooth
+systemctl enable bluetooth usbmuxd
 # PipeWire is deliberately run as a user service (not system-wide)
 # — this is the official, recommended setup on Arch Linux.
 su -l "$ARCHINSTALL_username" -c "systemctl --user enable pipewire pipewire-pulse wireplumber" 2>/dev/null || true
